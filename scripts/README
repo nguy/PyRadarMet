@@ -1,0 +1,27 @@
+This scripts directory contains executables that can be used for calculations.
+
+cal_zdr - Lets the user calculate the ZDR bias of a dual polarimetric radar.
+zdral_3panel - Produces vertical plots of reflectivity, differential reflectivity,
+               and standard deviation of ZDR.  These can be modified by user.
+
+These programs can be used from the command line in one of two ways.
+Note: Just substitute zdrcal_3panel for cal_zdr 
+For a single file, if you want a plot output:
+
+$ cal_zdr --{filetype} -p "{filename}"
+
+See the help file for filetypes accepted and the filename can be a long path.
+
+For multiple files:
+
+$ cal_zdr --{filetype} -p "{filename_search_path}"
+
+the filename_search_path can be something like KTLX* and all files in that
+directory will be processed.  
+
+There is a check for ZDRCal, but not sure how robust it is at this time.  Note this has
+been commented out as there is little consistency in naming conventions
+between radar systems.
+
+The executable can be modified with 3 different thresholds at the top of the 
+file to control what data to keep for analysis.
