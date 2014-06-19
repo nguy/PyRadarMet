@@ -1,9 +1,11 @@
-This scripts directory contains executables that can be used for calculations.
+This scripts directory contains executables that may be useful for radar processing.
 
+----------------------------------------------------------------------------------
+CALCULATIONS/ANALYSIS:
 cal_zdr - Lets the user calculate the ZDR bias of a dual polarimetric radar.
 zdral_3panel - Produces vertical plots of reflectivity, differential reflectivity,
                and standard deviation of ZDR.  These can be modified by user.
-
+----------------------------------------
 These programs can be used from the command line in one of two ways.
 Note: Just substitute zdrcal_3panel for cal_zdr 
 For a single file, if you want a plot output:
@@ -25,3 +27,9 @@ between radar systems.
 
 The executable can be modified with 3 different thresholds at the top of the 
 file to control what data to keep for analysis.
+----------------------------------------------------------------------------------
+LIST SIGMET RAW FILE CHARACTERISTICS:
+listfile_raw.py - Create a list of characteristics for file(s) and output to screen 
+or output file
+
+$ listfile_raw.py -m "{filename_search_path}" "{output_filename}"

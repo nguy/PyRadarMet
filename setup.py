@@ -46,5 +46,5 @@ A toolkit that contains a variety of utilities that can be used
 * Calculate Doppler radar characteristics
 * Calculate geometrical characterisistics of radar
 * Calculate variables from radar output""",
-       install_requires = ['Numpy >=1.7.2'],
+       install_requires = ['Numpy >=1.7.2','pyart'],
        )

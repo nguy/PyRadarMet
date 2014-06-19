@@ -132,7 +132,6 @@ def pulse_duration(tau):
 # HISTORY::
 #   3 Feb 2014 - Nick Guy NOAA/NSSL/WRDD, NRC Postdoc
 #---------------------------------------
-    tau = c * pDur/2
     pDur = 2 * tau/c
 
     return pDur
