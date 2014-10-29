@@ -1,20 +1,13 @@
-PyRadarMet – Python Fundamental Calculations in Radar Meteorology package notes 
+PyRadarMet
+=============== 
+
+Python Fundamental Calculations in Radar Meteorology package notes
 
 Created:   5 February 2014	Nick Guy (NRC; NOAA/NSSL)
 Updated:  13 February 2014      NG - Added functions to system and variables
 Updated:   8 April 2014         NG - Added extensive docstring formatting, correct Vmax
                                       equation.
-
-
-PACKAGE STRUCTURE::
-pyradarmet/                   Top-level package
-    __init__.py               Initialize the package
-    attenuation.py
-    conversion.py
-    doppler.py
-    geometry.py
-    system.py
-    variables.py
+          19 June 2014          NG - Added a script to list raw Sigmet characteristics
 
 
 Further Details::
@@ -40,22 +33,25 @@ variables.py – Routines to calculate such characteristics as CDR, LDR, ZDR, ZD
 zdrcal.py – Routines to calculate ZDR offset of a dual-polarimetric radar.  This is called
               by an executable called cal_zdr.
 
-INSTALL::
-As of now, I have used these as a standalone package that was not installed as a package.
+## Installation
+As of now, I have used these as a standalone package that was not installed.
 To access, I just added the path where the folder was unpacked to my 
 PYTHONPATH environmental variable path (in my .bashrc file)
 
-e.g. export PYTHONPATH=/Users/nickguy/programs/python/pythonlib
+e.g.
+```python
+export PYTHONPATH=/Users/nickguy/programs/python/pythonlib
+```
 
-There is a setup.py file provided, HOWEVER this may not work properly and I would suggest
- using the above method to access the package until the software becomes more mature.
+There is a setup.py file provided, this should work to install to a common python installation directory.
 
-NOTES::
-This is likely very immature software, as it was originally an attempt to help me get  
+## Notes
+This is somewhat immature software, as it was originally an attempt to help me get  
  used to programming in Python environment.  
-I thought I’d pass these out though if they were useful.  Please feel free to contact me
-with questions or suggestions.  Do note this is a side project and it may take me some
-time to respond.
+I have tested more since it was originally developed and have modified accordingly.
+
+Please feel free to contact me with questions or suggestions.  
+Do note this is a side project and it may take me some time to respond.
 
 This is open-source software, with no warranties extended.
 

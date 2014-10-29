@@ -9,6 +9,7 @@ PyRadarMet is a toolkit that contains a variety of utilities that can be used
 * Calculate Doppler radar characteristics
 * Calculate geometrical characterisistics of radar
 * Calculate variables from radar output
+* Calculate ZDR bias of radar system
 
 """
 
@@ -27,7 +28,7 @@ package_data = {'pyradarmet':datafiles}
 
 #- Run setup
 setup (name = 'pyradarmet',
-       version = '0.1.0',
+       version = '0.1.1',
        author = 'Nick Guy',
        author_email = 'nick.guy@noaa.gov'
        packages = packages,
@@ -45,6 +46,7 @@ A toolkit that contains a variety of utilities that can be used
 * Calculate fundamental radar system characteristics
 * Calculate Doppler radar characteristics
 * Calculate geometrical characterisistics of radar
-* Calculate variables from radar output""",
+* Calculate variables from radar output
+* Calculate ZDR bias of radar system""",
        install_requires = ['Numpy >=1.7.2','pyart'],
        )
