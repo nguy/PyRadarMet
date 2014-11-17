@@ -511,6 +511,7 @@ class BeamBlock(object):
     def plot_3panel(self, beam_blockage='complete',
                     lon_plot_range=2., lat_plot_range=2.,
                     terrain_cmap=None, beam_blockage_cmap=None,
+                    elev_min=None, elev_max=None,
                     range_rings=None,
                     saveFig=False):
         '''
@@ -529,6 +530,10 @@ class BeamBlock(object):
             Matplotlib colormap to use for elevation map
         beam_blockage_cmap : str
             Matplotlib colormap to use for beam blockage map
+        elev_min : float
+            Minumum elevation to display on beam propagation and terrain height [meters]
+        elev_max : float
+            Maximum elevation to display on beam propagation and terrain height [meters]
         range_rings : float
             A list with location of range rings - e.g. [50., 100.]
         saveFig : boolean
@@ -554,7 +559,7 @@ class BeamBlock(object):
             self.draw_bb_map(fig, ax2, BB=self.PBB, range_rings=range_rings)
         elif beam_blockage == 'complete':
             self.draw_bb_map(fig, ax2, range_rings=range_rings)
-        self.draw_beam_terrain_profile(fig, ax3)
+        self.draw_beam_terrain_profile(fig, ax3, ymin=elev_min, ymax=elev_max)
         
         if saveFig:
             plt.savefig('BBmap.png', format='png')
@@ -604,8 +609,13 @@ class BeamBlock(object):
                 self.plot_range_ring(range_rings[nn], bm=bm2)
         fig.colorbar(BBmap, ax=ax)
          
-    def draw_beam_terrain_profile(self, fig, ax):
+    def draw_beam_terrain_profile(self, fig, ax, ymin=None, ymax=None):
         '''Draw the Beam height along with terrain and PBB'''
+        if ymin is None:
+            ymin = 0.
+        if ymax is None:
+            ymax = 5000.
+        
         bc, = ax.plot(self.rng_gnd / 1000., self.h / 1000., '-b', 
                      linewidth=3, label='Beam Center')
         b3db, = ax.plot(self.rng_gnd / 1000., (self.h + self.a) / 1000., ':b', 
@@ -615,7 +625,7 @@ class BeamBlock(object):
                         self.terr[self.Az_plot, :] / 1000., 
                         color='0.75')
         ax.set_xlim(0., self.range)
-        ax.set_ylim(0., 5.)
+        ax.set_ylim(ymin / 1000., ymax / 1000.)
         ax.set_title(r'dN/dh = %d km$^{-1}$; Elevation angle = %g degrees at %d azimuth'% \
                       (self.dNdH, self.E, self.Az_plot), fontdict=TITLEDICT)
         ax.set_xlabel('Range (km)')
@@ -645,10 +655,6 @@ class BeamBlock(object):
             Axis to plot on. None will use the current axis.
         """
         npts = 100
-#        angle = np.linspace(0, 2. * np.pi, npts)
-#        x = range_ring_location_km * 1000. * np.sin(angle)
-#        y = range_ring_location_km * 1000. * np.cos(angle)
-#        bm.plot(x, y, c=color, linestyle=ls, latlon=False)
         bm.tissot(self.rlon, self.rlat, 
                   np.degrees(range_ring_location_km * 1000. / RE), npts,
                   fill=False, color='black', linestyle='dashed')
