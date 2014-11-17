@@ -153,7 +153,7 @@ def pulse_length(pDur):
        to the factor of 1/2.
     """
 
-    tau = c * pDur/2.
+    tau = c * pDur / 2.
 
     return tau
     
@@ -232,7 +232,7 @@ def radar_const(Pt, G, Tau, lam, bwH, bwV, Lm, Lr):
     Numer = np.pi**3 * c * Pt * Glin**2 * Tau * bwHr * bwVr * Lmlin * Lrlin
 
     # Calculate the denominator
-    Denom = 1024. *np.log(2) * lam**2
+    Denom = 1024. * np.log(2) * lam**2
 
     C = Numer/Denom
 

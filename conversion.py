@@ -51,7 +51,7 @@ def dBZ2Z(dBZ):
 
     Zlin = 10.**(dBZ/10.)
 
-    return Z
+    return Zlin
     
 #============
 

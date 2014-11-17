@@ -107,7 +107,7 @@ def scat_coeff(D, lam, m):
     
 #=============
 
-def ext_coeff(D,lam,m):
+def ext_coeff(D, lam, m):
     """Extinction coefficient of a spherical particle.
     
     From Doviak and Zrnic (1993), Eqn 3.14b or Battan (1973), Eqn 6.5
@@ -137,8 +137,8 @@ def ext_coeff(D,lam,m):
        for particle sizes of equivalent ice spheres.
     """
     
-    Qa = abs_coeff(D,lam,m)
-    Qs = scat_coeff(D,lam,m)
+    Qa = abs_coeff(D, lam, m)
+    Qs = scat_coeff(D, lam, m)
     Qe = Qa + Qs
 
     return Qe

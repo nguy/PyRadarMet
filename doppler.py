@@ -59,7 +59,7 @@ def freq(lam):
     freq = freq(lam)
     """
     
-    freq = c/lam
+    freq = c / lam
 
     return freq
     
@@ -83,7 +83,7 @@ def wavelength(freq):
     lam = wavelength(freq)
     """
 
-    lam = c/freq
+    lam = c / freq
 
     return lam
     
@@ -107,8 +107,7 @@ def pulse_duration(tau):
     pDur = pulse_duration(tau)
     """
 
-    tau = c * pDur/2
-    pDur = 2 * tau/c
+    pDur = 2 * tau / c
 
     return pDur
     
@@ -132,7 +131,7 @@ def pulse_length(pDur):
     tau = pulse_length(pDur)
     """
 
-    tau = c * pDur/2
+    tau = c * pDur / 2
 
     return tau
     
