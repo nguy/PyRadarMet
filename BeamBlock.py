@@ -5,8 +5,11 @@ BeamBlock.py - Class for Beam Blockage calculations
 Author::
 Nick Guy - OU CIMMS/Univ of Miami
 
+This program was ported from code written in IDL used at Colorado State University.
+It is believed that the original code at CSU was written by Steven Nesbitt.  
+Timothy Lang also contributed to the development of this program.
+
 This program is not particularly fast as it reads in large DEM files.
-I'm sure it coud be optimized to be more efficient.
 """
 # Import required libraries
 import struct

@@ -32,6 +32,8 @@ variables.py – Routines to calculate such characteristics as CDR, LDR, ZDR, ZD
                 
 zdrcal.py – Routines to calculate ZDR offset of a dual-polarimetric radar.  This is called
               by an executable called cal_zdr.
+              
+BeamBlock - A class that allows the calculation of the geometric beam blocking 
 
 ## Installation
 As of now, I have used these as a standalone package that was not installed.
@@ -44,6 +46,25 @@ export PYTHONPATH=/Users/nickguy/programs/python/pythonlib
 ```
 
 There is a setup.py file provided, this should work to install to a common python installation directory.
+
+##Data
+The data folder holds Digital Elevation Model data used in the BeamBlock routine.
+The data is the GTOPO30, a 30-arc second (~ 1 km) elevation data set.  
+Data available from the U.S. Geological Survey.
+Downloaded from the [long term archive](https://lta.cr.usgs.gov/),
+
+ using the [EarthExplorer](http://earthexplorer.usgs.gov/) tool.
+
+## Dependencies
+
+Developed on the Anaconda distribution (1.9.1 & Python 2.7.7), tested to:
+Anaconda 2.1.0 and Python 2.7.8
+[Anaconda](https://store.continuum.io/cshop/anaconda/)
+
+It uses a typical scientific python stack:
+[Numpy](http://www.scipy.org)
+[Scipy](http://www.scipy.org)
+[matplotlib](http://matplotlib.org)
 
 ## Notes
 This is somewhat immature software, as it was originally an attempt to help me get  
