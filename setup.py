@@ -55,7 +55,7 @@ setup(
         Operating System :: Unix
         Operating System :: POSIX :: Linux
         Operating System :: MacOS
-        """]
+        """],
        long_description = """
 A toolkit that contains a variety of utilities that can be used
  to calculate fundamental radar meteorology values:

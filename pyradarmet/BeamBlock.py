@@ -21,6 +21,8 @@ from glob import glob
 import os
 
 import pyradarmet as rmet
+from .geometry import r_effective, ray_height
+from .geometry import half_power_radius, range_correct, beam_block_frac
 from scipy.io.idl import readsav
 import scipy.ndimage as scim
 from mpl_toolkits.basemap import Basemap
@@ -307,17 +309,17 @@ class BeamBlock(object):
         self.rng = np.linspace(0, self.range*1000., self.nrng)
         
         # Calculate the effective radius
-        self.Reff = rmet.geometry.r_effective()
+        self.Reff = r_effective()
 
         # Calculate the height of center of beam
-        self.h = rmet.geometry.ray_height(self.rng, self.E, 
+        self.h = ray_height(self.rng, self.E, 
                                           self.ralt, R1=self.Reff)
 
         # Calculate the beam radius
-        self.a = rmet.geometry.half_power_radius(self.rng, self.BW)
+        self.a = half_power_radius(self.rng, self.BW)
 
         # Calculate rng_gnd (actual distance along ground)
-        self.rng_gnd = rmet.geometry.range_correct(self.rng, self.h, self.E)
+        self.rng_gnd = range_correct(self.rng, self.h, self.E)
 
         # Set up arrays for calculations
         self.phis = np.linspace(0, 360, self.naz)
@@ -357,7 +359,7 @@ class BeamBlock(object):
                                                     prefilter=False)
 
             # Calculate PBB along range
-            self.PBB[jj, :] = rmet.geometry.beam_block_frac(self.terr[jj, :], 
+            self.PBB[jj, :] = beam_block_frac(self.terr[jj, :], 
                                                             self.h, self.a)
 
         self.PBB = np.ma.masked_invalid(self.PBB)
