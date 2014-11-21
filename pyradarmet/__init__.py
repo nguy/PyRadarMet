@@ -10,12 +10,4 @@ Top-level package (:mod:`pyradarmet`)
 
 """
 
-import attenuation
-import conversion
-import doppler
-import geometry
-import system
-import variables
-import zdrcal
-
 __all__ = [s for s in dir() if not s.startswith('_')]

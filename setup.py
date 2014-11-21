@@ -13,30 +13,49 @@ PyRadarMet is a toolkit that contains a variety of utilities that can be used
 
 """
 
-from numpy.distutils.core import setup, Extension
 import os
+import sys
+#import glob
+
+from setuptools import setup, find_packages
+from distutils.sysconfig import get_python_lib
 
 #- Pull the header into a variable 
 doclines = __doc__.split("\n")
 
+VERSION = '0.1.1'
+
+DEM_DATADIR = os.sep.join([os.path.dirname(__file__), 'data'])
+
 #- Set variables for setup
-packages = ['pyradarmet']
+PACKAGES = ['pyradarmet']
+
 package_dirs={'pyradarmet'}
-datafiles = glob.glob(os.path.join(pathout,'*'))
-datafiles = [os.path.join('data',os.path.basename(f)) for f in datafiles]
-package_data = {'pyradarmet':datafiles}
+#datafiles = glob.glob(os.path.join(pathout,'*'))
+#datafiles = [os.path.join('data',os.path.basename(f)) for f in datafiles]
+#package_data = {'pyradarmet':datafiles}
 
 #- Run setup
-setup (name = 'pyradarmet',
-       version = '0.1.1',
-       author = 'Nick Guy',
-       author_email = 'nick.guy@noaa.gov'
-       packages = packages,
-       package_dir = package_dirs,
-       package_data = package_data,
-       url = 'https://github.com/nguy/PyRadarMet',
-       license='LICENSE.txt',
-       description = doclines[0],
+setup(
+      name='pyradarmet',
+      version=VERSION,
+      url='https://github.com/nguy/PyRadarMet',
+      author='Nick Guy',
+      author_email='nick.guy@noaa.gov',
+      description=doclines[0],
+      license='LICENSE.txt',
+      packages=PACKAGES,
+      package_data={'pyradarmet': ['data/*']},
+      include_package_data=True,
+      classifiers=["""
+        Development Status :: 3 - Alpha,
+        Programming Language :: Python",
+        Topic :: Scientific/Engineering
+        Topic :: Scientific/Engineering :: Atmospheric Science
+        Operating System :: Unix
+        Operating System :: POSIX :: Linux
+        Operating System :: MacOS
+        """]
        long_description = """
 A toolkit that contains a variety of utilities that can be used
  to calculate fundamental radar meteorology values:
@@ -48,5 +67,5 @@ A toolkit that contains a variety of utilities that can be used
 * Calculate geometrical characterisistics of radar
 * Calculate variables from radar output
 * Calculate ZDR bias of radar system""",
-       install_requires = ['Numpy >=1.7.2','pyart'],
-       )
+      install_requires = ['Numpy >=1.7.2','pyart'],
+      )
