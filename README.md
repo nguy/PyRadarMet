@@ -33,19 +33,18 @@ variables.py – Routines to calculate such characteristics as CDR, LDR, ZDR, ZD
 zdrcal.py – Routines to calculate ZDR offset of a dual-polarimetric radar.  This is called
               by an executable called cal_zdr.
               
-BeamBlock - A class that allows the calculation of the geometric beam blocking 
+BeamBlock - A class that allows the calculation of the geometric beam blocking .
 
 ## Installation
-As of now, I have used these as a standalone package that was not installed.
-To access, I just added the path where the folder was unpacked to my 
-PYTHONPATH environmental variable path (in my .bashrc file)
+The setup.py should now work.  The package has been put in a more standard format as of 21 Nov 2014.
+Install should be able to be done by the following
 
 e.g.
 ```python
-export PYTHONPATH=/Users/nickguy/programs/python/pythonlib
+python setup.py install
 ```
 
-There is a setup.py file provided, this should work to install to a common python installation directory.
+The install takes some time because of all of the DEM files in the data directory.
 
 ##Data
 The data folder holds Digital Elevation Model data used in the BeamBlock routine.

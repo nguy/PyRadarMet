@@ -15,7 +15,6 @@ PyRadarMet is a toolkit that contains a variety of utilities that can be used
 
 import os
 import sys
-#import glob
 
 from setuptools import setup, find_packages
 from distutils.sysconfig import get_python_lib
