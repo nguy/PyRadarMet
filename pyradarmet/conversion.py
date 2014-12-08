@@ -151,7 +151,7 @@ def si2kts(SI):
     
 #=============
 
-def kmh2si(kts):
+def kmh2si(kmh):
     """Conversion from km/hr to SI wind units
     
     INPUT::

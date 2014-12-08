@@ -256,7 +256,7 @@ def ant_eff_area(G, lam):
     OUPUT::
     -----
     Ae : float
-        Antenna effective area [unitless]
+        Antenna effective area [m^2]
     
     USAGE::
     -----
@@ -292,7 +292,7 @@ def power_target(Pt, G, Asig, r):
     OUPUT::
     -----
     Psig : float
-        Power intecepted by target [m]
+        Power intecepted by target [W]
     
     USAGE::
     -----
@@ -317,7 +317,7 @@ def xsec_bscatter_sphere(D, lam, K=0.93):
     INPUT::
     -----
     D : float
-        Diamter of targer [m]
+        Diamter of target [m]
     lam : float
         Radar wavelength [m]
     K : float
@@ -326,7 +326,7 @@ def xsec_bscatter_sphere(D, lam, K=0.93):
     OUPUT::
     -----
     sig : float
-        Backscattering cross-section [m*2]
+        Backscattering cross-section [m^2]
     
     USAGE::
     -----
@@ -452,7 +452,7 @@ def power_return_target(Pt, G, lam, sig, r):
     OUPUT::
     -----
     Pr : float
-        Power returned by target [m]
+        Power returned by target [W]
     
     USAGE::
     -----

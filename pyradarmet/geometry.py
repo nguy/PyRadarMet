@@ -32,10 +32,11 @@ import numpy as np
 SLP = 1013.25 # Sea-level Pressure [hPa]
 P0 = 1000.  # Reference pressure [hPa]
 c = 3e8 # Speed of light [m/s]
-Re = 6374000 # Earth's radius [m]
+Re = 6371000 # Earth's average radius [m] assuming sphericity 
 R43 = Re*4./3. # 4/3 Approximation effective radius for standard atmosphere [m]
 kBoltz = 1.381e-23 # Boltzmann's constant [ m^2 kg s^-2 K^-1]
 
+# Earth radius taken according to International Union of Geodesy and Geophysics
 ###################
 # BEGIN FUNCTIONS
 ###################

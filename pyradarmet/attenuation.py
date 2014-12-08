@@ -131,10 +131,12 @@ def ext_coeff(D, lam, m):
  
     NOTES::
     -----
-    The default is for a dielectric factor value for water.   
-       This can be changed by the user, e.g. K=0.208, diameters 
-       for particle sizes of equivalent melted or K=0.176 
-       for particle sizes of equivalent ice spheres.
+    An example from Battan (1973) is for water at 0C m=7.14-2.89j for a
+       wavelength of 3.21 cm and for ice m=1.78-0.0024j for 
+       wavelength range from 1-10 cm.
+    See Battan (1973) Ch.4 , Tables 4.1 and 4.2 for values from 
+       Gunn and East (1954).
+    Also see Doviak and Zrnic (1993), Fig. 3.3 caption.
     """
     
     Qa = abs_coeff(D, lam, m)
