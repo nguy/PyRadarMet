@@ -515,6 +515,9 @@ class BeamBlock(object):
                     terrain_cmap=None, beam_blockage_cmap=None,
                     elev_min=None, elev_max=None,
                     range_rings=None,
+                    profile_ymin=None, profile_ymax=None,
+                    ht_shade_min=None, ht_shade_max=None,
+                    lat_spacing=None, lon_spacing=None,
                     saveFig=False):
         '''
         Create a 3-panel plot characterization of beam blockage
@@ -538,6 +541,14 @@ class BeamBlock(object):
             Maximum elevation to display on beam propagation and terrain height [meters]
         range_rings : float
             A list with location of range rings - e.g. [50., 100.]
+        ht_shade_min : float
+            Minimum elevation to use in topography colorbar shading [meters]
+        ht_shade_max : float
+            Maximum elevation to use in topography colorbar shading [meters]
+        lat_spacing : float
+            Spacing to use for latitudinal lines on maps [degrees]
+        lon_spacing : float
+            Spacing to use for longitudinal lines on maps [degrees]
         saveFig : boolean
             True to save figure as output file, False to show
         '''
@@ -556,11 +567,14 @@ class BeamBlock(object):
         ax2 = fig.add_axes(PAN3_AX2)
         ax3 = fig.add_axes(PAN3_AX3)
         
-        self.draw_terrain_height_map(fig, ax1)
+        self.draw_terrain_height_map(fig, ax1, vmin=ht_shade_min, vmax=ht_shade_max,
+                                     lat_spacing=lat_spacing, lon_spacing=lon_spacing)
         if beam_blockage == 'partial':
-            self.draw_bb_map(fig, ax2, BB=self.PBB, range_rings=range_rings)
+            self.draw_bb_map(fig, ax2, BB=self.PBB, range_rings=range_rings,
+                            lat_spacing=lat_spacing, lon_spacing=lon_spacing)
         elif beam_blockage == 'complete':
-            self.draw_bb_map(fig, ax2, range_rings=range_rings)
+            self.draw_bb_map(fig, ax2, range_rings=range_rings,
+                            lat_spacing=lat_spacing, lon_spacing=lon_spacing)
         self.draw_beam_terrain_profile(fig, ax3, ymin=elev_min, ymax=elev_max)
         
         if saveFig:
@@ -568,38 +582,59 @@ class BeamBlock(object):
         else:
             plt.show()
     
-    def draw_terrain_height_map(self, fig, ax):
+    def draw_terrain_height_map(self, fig, ax, vmin=None, vmax=None,
+                                lat_spacing=None, lon_spacing=None):
         '''Draw the terrain heights'''
+        if vmin is None:
+            topomin = 0.05
+        else:
+            topomin = vmin/1000.
+        if vmax is None:
+            topomax = 3.
+        else:
+            topomax = vmax/1000.
+            
+        if lat_spacing is None:
+            lat_spacing = 1.
+        if lon_spacing is None:
+            lon_spacing = 1.
+            
         bm1 = Basemap(projection='cea', resolution='l', area_thresh = 10000.,
                     llcrnrlon=self.minlon, urcrnrlon=self.maxlon,
                     llcrnrlat=self.minlat, urcrnrlat=self.maxlat,
                     ax=ax)
         ax.set_title('Terrain within 150 km of Radar (km)', fontdict=TITLEDICT)
-        bm1.drawmeridians(np.arange(self.minlon, self.maxlon, 1.), labels=[1,0,0,1])           
-        bm1.drawparallels(np.arange(self.minlat, self.maxlat, 1.), labels=[1,0,0,1])             
+        bm1.drawmeridians(np.arange(self.minlon, self.maxlon, lon_spacing), labels=[1,0,0,1])           
+        bm1.drawparallels(np.arange(self.minlat, self.maxlat, lat_spacing), labels=[1,0,0,1])             
         bm1.drawcountries()
         bm1.drawcoastlines()
         bm1.drawrivers()
         
         xbm1, ybm1 = bm1(self.lon, self.lat)
-        Htmap = bm1.pcolormesh(xbm1, ybm1, self.topo/1000., vmin=.05, vmax=3.,
+        Htmap = bm1.pcolormesh(xbm1, ybm1, self.topo/1000., vmin=topomin, vmax=topomax,
                                cmap=self.terr_cmap)
         bm1.plot(self.rlon, self.rlat, 'rD', latlon=True)
         #plot_range_ring(50., bm=bm1, color='w')
         fig.colorbar(Htmap, ax=ax)
         
-    def draw_bb_map(self, fig, ax, BB=None, range_rings=None):
+    def draw_bb_map(self, fig, ax, BB=None, range_rings=None,
+                                lat_spacing=None, lon_spacing=None):
         '''Draw the Beam Blockage'''
         if BB is None:
             BB = self.CBB
+            
+        if lat_spacing is None:
+            lat_spacing = 1.
+        if lon_spacing is None:
+            lon_spacing = 1.
             
         bm2 = Basemap(projection='cea', resolution='l', area_thresh = 10000.,
                     llcrnrlon=self.minlon, urcrnrlon=self.maxlon,
                     llcrnrlat=self.minlat, urcrnrlat=self.maxlat,
                     ax=ax)
         ax.set_title('Beam-blockage fraction', fontdict=TITLEDICT)
-        bm2.drawmeridians(np.arange(self.minlon, self.maxlon, 1.), labels=[1,0,0,1])           
-        bm2.drawparallels(np.arange(self.minlat, self.maxlat, 1.), labels=[1,0,0,1])             
+        bm2.drawmeridians(np.arange(self.minlon, self.maxlon, lon_spacing), labels=[1,0,0,1])           
+        bm2.drawparallels(np.arange(self.minlat, self.maxlat, lat_spacing), labels=[1,0,0,1])             
         bm2.drawcountries()
         bm2.drawcoastlines()
         bm2.drawrivers()
