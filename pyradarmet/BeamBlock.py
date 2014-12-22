@@ -19,6 +19,8 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from glob import glob
 import os
+import netCDF4 as nc4
+import time
 
 import pyradarmet as rmet
 from .geometry import r_effective, ray_height
@@ -519,7 +521,7 @@ class BeamBlock(object):
                     ht_shade_min=None, ht_shade_max=None,
                     lat_spacing=None, lon_spacing=None,
                     saveFig=False):
-        '''
+        """
         Create a 3-panel plot characterization of beam blockage
         
         Parameters::
@@ -551,7 +553,7 @@ class BeamBlock(object):
             Spacing to use for longitudinal lines on maps [degrees]
         saveFig : boolean
             True to save figure as output file, False to show
-        '''
+        """
         
         # Set the radar min and max longitude to plot
         self.minlat, self.maxlat = self.rlat - lat_plot_range, self.rlat + lat_plot_range
@@ -603,7 +605,7 @@ class BeamBlock(object):
                     llcrnrlon=self.minlon, urcrnrlon=self.maxlon,
                     llcrnrlat=self.minlat, urcrnrlat=self.maxlat,
                     ax=ax)
-        ax.set_title('Terrain within 150 km of Radar (km)', fontdict=TITLEDICT)
+        ax.set_title('Terrain within %02d km of Radar (km)'%(self.range), fontdict=TITLEDICT)
         bm1.drawmeridians(np.arange(self.minlon, self.maxlon, lon_spacing), labels=[1,0,0,1])           
         bm1.drawparallels(np.arange(self.minlat, self.maxlat, lat_spacing), labels=[1,0,0,1])             
         bm1.drawcountries()
@@ -695,5 +697,73 @@ class BeamBlock(object):
         bm.tissot(self.rlon, self.rlat, 
                   np.degrees(range_ring_location_km * 1000. / RE), npts,
                   fill=False, color='black', linestyle='dashed')
+    
+################
+# Save methods #
+################
+
+    def save_map_data(self, filename=None):
+        """
+        Save beam blockage and mapped data to NetCDF file
         
+        Parameters::
+        ----------
+        filename : str
+            Output name of NetCDF file
+        """
+        if filename is None:
+            filename = 'BBmap_data'
+        else:
+            filename = filename
+            
+        # Open a NetCDF file to write to
+        nc_fid = nc4.Dataset(filename + '.nc', 'w', format='NETCDF4')
+        nc_fid.description = "PyRadarMet BeamBlockage calculations"
         
+        # Define dimensions
+        xid = nc_fid.createDimension('range', self.nrng)
+        yid = nc_fid.createDimension('azimuth', self.naz)
+        
+        # Set global attributes
+        nc_fid.topo_source = 'USGS GTOPO30 DEM files'
+        nc_fid.history = 'Created ' + time.ctime(time.time()) + ' using python netCDF4 module'
+        
+        # Create Output variables
+        azid = nc_fid.createVariable('azimuth', np.float32, ('azimuth',))
+        azid.units = 'degrees'
+        azid.long_name = 'Azimuth'
+        azid[:] = self.phis[:]
+        
+        rngid = nc_fid.createVariable('range', np.float32, ('range',))
+        rngid.units = 'meters'
+        rngid.long_name = 'Range'
+        rngid[:] = self.rng_gnd[:]
+        
+        topoid = nc_fid.createVariable('topography', np.float32, ('azimuth','range'))
+        topoid.units = 'meters'
+        topoid.long_name = 'Terrain Height'
+        topoid[:] = self.terr[:]
+        
+        lonid = nc_fid.createVariable('longitude', np.float32, ('azimuth', 'range'))
+        lonid.units = 'degrees east'
+        lonid.long_name = 'Longitude'
+        lonid[:] = self.rng_lon[:]
+        
+        latid = nc_fid.createVariable('latitude', np.float32, ('azimuth', 'range'))
+        latid.units = 'degrees north'
+        latid.long_name = 'Latitude'
+        latid[:] = self.rng_lat[:]
+        
+        pbbid = nc_fid.createVariable('pbb', np.float32, ('azimuth','range'))
+        pbbid.units = 'unitless'
+        pbbid.long_name = 'Partial Beam Blockage Fraction'
+        pbbid[:] = self.PBB[:]
+        
+        cbbid = nc_fid.createVariable('cbb', np.float32, ('azimuth','range'))
+        cbbid.units = 'unitless'
+        cbbid.long_name = 'Cumulative Beam Blockage Fraction'
+        cbbid[:] = self.CBB[:]
+        
+        print "Saving " + filename + '.nc'
+        # Close the NetCDF file
+        nc_fid.close()
