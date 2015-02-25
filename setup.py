@@ -66,5 +66,5 @@ A toolkit that contains a variety of utilities that can be used
 * Calculate geometrical characterisistics of radar
 * Calculate variables from radar output
 * Calculate ZDR bias of radar system""",
-      install_requires = ['Numpy >=1.7.2','pyart'],
+      install_requires = ['Numpy >=1.7.2','pyart >= 1.0.0'],
       )
