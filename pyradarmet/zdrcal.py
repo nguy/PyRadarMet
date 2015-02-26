@@ -20,8 +20,8 @@ Adapted by Nick Guy from original Fortran code written by David Jorgensen,
 import numpy as np
 import matplotlib.pylab as plt
 
-#from ..config import get_metadata, get_field_name, get_fillvalue
-from pyart.config import get_metadata, get_field_name, get_fillvalue
+from pyart.config import get_field_name
+import pyart
 #from .conversion import dBZ2Z, Z2dBZ
 #======================================================================
 def calculate_zdr_offset(radar, debug=False, remove_first_n_gates=None,
