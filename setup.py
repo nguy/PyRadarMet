@@ -34,6 +34,15 @@ package_dirs={'pyradarmet'}
 #datafiles = [os.path.join('data',os.path.basename(f)) for f in datafiles]
 #package_data = {'pyradarmet':datafiles}
 
+# Check for Pyart package - Avoid conflict with PyPI
+
+try:
+    import pyart.io
+except ImportError as e:
+    print("Could not find Pyart Install")
+    sys.exit()
+
+
 #- Run setup
 setup(
       name='pyradarmet',
@@ -66,5 +75,5 @@ A toolkit that contains a variety of utilities that can be used
 * Calculate geometrical characterisistics of radar
 * Calculate variables from radar output
 * Calculate ZDR bias of radar system""",
-      install_requires = ['Numpy >=1.7.2', 'pyart'],
+      install_requires = ['Numpy >=1.7.2'],
       )
