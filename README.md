@@ -2,15 +2,14 @@ PyRadarMet
 =============== 
 Python Fundamental Calculations in Radar Meteorology package notes
 
-Created:   5 February 2014	Nick Guy (NRC; NOAA/NSSL)
-Updated:  13 Feb 2014           NG - Added functions to system and variables
-           8 Apr 2014           NG - Added extensive docstring formatting, correct Vmax
-                                      equation.
-          19 Jun 2014           NG - Added a script to list raw Sigmet characteristics
-          18 Mar 2015           NG - Modified setup.py to auto download topo files
+Originally Created:   5 February 2014
 
+## Author
+Nick Guy - nick.guy@uwyo.edu
 
-Further Details::
+Special thanks to Timothy Lang and Kai Muehlbauer for the insights and contributions.
+
+## Package Details
 attenuation.py – Routines to calculate coefficients useful in attenuation calculations
 
 conversion.py – Routines to convert linear to log reflectivity and vice versa
@@ -34,11 +33,6 @@ zdrcal.py – Routines to calculate ZDR offset of a dual-polarimetric radar.  Th
               by an executable called cal_zdr.
               
 BeamBlock - A class that allows the calculation of the geometric beam blocking.
-
-## Author
-Nick Guy - nick.guy@uwyo.edu
-
-Special thanks to Timothy Lang and Kai Muehlbauer for the insights and contributions.
 
 ## News
 This module has be ported over to an [R package](http://cran.r-project.org/web/packages/radar/) by Jose Gama.
