@@ -1,13 +1,13 @@
 PyRadarMet
 =============== 
-
 Python Fundamental Calculations in Radar Meteorology package notes
 
 Created:   5 February 2014	Nick Guy (NRC; NOAA/NSSL)
-Updated:  13 February 2014      NG - Added functions to system and variables
-Updated:   8 April 2014         NG - Added extensive docstring formatting, correct Vmax
+Updated:  13 Feb 2014           NG - Added functions to system and variables
+           8 Apr 2014           NG - Added extensive docstring formatting, correct Vmax
                                       equation.
-          19 June 2014          NG - Added a script to list raw Sigmet characteristics
+          19 Jun 2014           NG - Added a script to list raw Sigmet characteristics
+          18 Mar 2015           NG - Modified setup.py to auto download topo files
 
 
 Further Details::
@@ -33,18 +33,49 @@ variables.py – Routines to calculate such characteristics as CDR, LDR, ZDR, ZD
 zdrcal.py – Routines to calculate ZDR offset of a dual-polarimetric radar.  This is called
               by an executable called cal_zdr.
               
-BeamBlock - A class that allows the calculation of the geometric beam blocking .
+BeamBlock - A class that allows the calculation of the geometric beam blocking.
+
+## Author
+Nick Guy - nick.guy@uwyo.edu
+
+Special thanks to Timothy Lang and Kai Muehlbauer for the insights and contributions.
+
+## News
+This module has be ported over to an [R package](http://cran.r-project.org/web/packages/radar/) by Jose Gama.
+
+Also, PyRadarMet is undergoing a port into the [wradlib](http://wradlib.bitbucket.org/) python package.
+
+Most fundamental modules are (or have been) ported currently into both packages.
+
+Special packages (e.g. BeamBlock, ZDR cal scripts) are currently only available in PyRadarMet.
 
 ## Installation
-The setup.py should now work.  The package has been put in a more standard format as of 21 Nov 2014.
-Install should be able to be done by the following
+There are two options for install.  The setup script now downloads the data listed below
+automatically.  
 
-e.g.
+To download and install the data within the package directory:
+
 ```python
 python setup.py install
 ```
 
-The install takes some time because of all of the DEM files in the data directory.
+This is the most robust way, as the data is always a relative path stored within the python 'egg'.
+
+To download the data and install it to a user-specified location an environmental variable must be set.
+The variable is 'GTOPO_DATA' and can be set on unix systems (in a bash environment) as such:
+```python
+export GTOPO_DATA=/some/direcoty/for/the/data
+```
+
+It is recommended that this be done in a shell profile file like .bashrc or .bash_profile 
+Then run the install command:
+```python
+python setup.py install
+```
+
+The install took about 150 seconds on a university connection when installed in an external directory.
+
+The install took about 250 seconds when installed as part of the package.
 
 ##Data
 The data folder holds Digital Elevation Model data used in the BeamBlock routine.
@@ -66,8 +97,7 @@ It uses a typical scientific python stack:
 [matplotlib](http://matplotlib.org)
 
 ## Notes
-This is somewhat immature software, as it was originally an attempt to help me get  
- used to programming in Python environment.  
+This software was originally an attempt to help me get used to programming in Python environment.  
 I have tested more since it was originally developed and have modified accordingly.
 
 Please feel free to contact me with questions or suggestions.  

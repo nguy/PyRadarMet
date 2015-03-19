@@ -21,6 +21,7 @@ from glob import glob
 import os
 import netCDF4 as nc4
 import time
+from pkg_resources import Requirement, resource_filename
 
 import pyradarmet as rmet
 from .geometry import r_effective, ray_height
@@ -46,7 +47,8 @@ PAN3_AX2 = [.58, .5, .43, .43]
 PAN3_AX3 = [.10, .08, .80, .35]
 
 # Set up the data directory for DEM files
-DEM_DATADIR = os.sep.join([os.path.dirname(__file__), 'data'])
+#DEM_DATADIR = os.sep.join([os.path.dirname(__file__), 'data'])
+#print DEM_DATADIR
 
 class BeamBlock(object):
     """
@@ -116,12 +118,22 @@ class BeamBlock(object):
             The size of the latitudinal box to subset, radar in middle
         """
         self.dem_file = dem_filename
+        self.dem_file2 = None
         self.dem_hdr_file = dem_hdr_file
         self.upper_left_x = upper_left_x
         self.upper_left_y = upper_left_y
         self.lon_box_size = lon_box_size
         self.lat_box_size = lat_box_size
         self.ralt = radar_alt
+        
+        # Set the directory where DEM data can be found
+        try:
+            os.environ["GTOPO_DATA"]
+            self.demdir = os.path.join(os.environ["GTOPO_DATA"], 'data')
+        except KeyError:
+            print "No GTOPO_DATA environmental variable found, "\
+            "assuming data embedded in PyRadarMet package"
+            self.demdir = os.sep.join([os.path.dirname(__file__), 'data'])
         
         # Set radar latitude and longitude
         if (radar_lon is None) or (radar_lat is None):
@@ -180,6 +192,7 @@ class BeamBlock(object):
         
         # Check the DEM file
         self._check_dem_file()
+#        self._grab_dem_file()
         
         # Read the DEM file
         self.read_dem()
@@ -386,127 +399,133 @@ class BeamBlock(object):
         pos = np.absolute(value - array[0]) / dp
         return pos
 
-#################
-# Check methods #
-#################
+####################
+# DEM file methods #
+####################
     
     def _check_dem_file(self):
         '''Check if dem file is passed and set if not'''
+        ###Add ability to stitch 2 files together self.rlon - londel
         if self.dem_file is None:
             if (self.rlon >= -180.) and (self.rlon < 180.) and \
                (self.rlat >= -90.) and (self.rlat < -60.):
-                dem_filename = 'gt30GT30antarcps'
+                dem_filename = 'antarcps'
             elif (self.rlon >= 20.) and (self.rlon < 60.) and \
                (self.rlat >= -10.) and (self.rlat < 40.):
-                dem_filename = 'gt30e020n40'
+                dem_filename = 'e020n40'
             elif (self.rlon >= 20.) and (self.rlon < 60.) and \
                (self.rlat >= 40.) and (self.rlat < 90.):
-                dem_filename = 'gt30e020n90'
+                dem_filename = 'e020n90'
             elif (self.rlon >= 20.) and (self.rlon < 60.) and \
                (self.rlat >= -60.) and (self.rlat < -10.):
-                dem_filename = 'gt30e020s10'
+                dem_filename = 'e020s10'
                 
             elif (self.rlon >= 60.) and (self.rlon < 100.) and \
                (self.rlat >= -10.) and (self.rlat < 40.):
-                dem_filename = 'gt30e060n40'
+                dem_filename = 'e060n40'
             elif (self.rlon >= 60.) and (self.rlon < 100.) and \
                (self.rlat >= 40.) and (self.rlat < 90.):
-                dem_filename = 'gt30e060n90'
+                dem_filename = 'e060n90'
             elif (self.rlon >= 60.) and (self.rlon < 100.) and \
                (self.rlat >= -60.) and (self.rlat < -10.):
-                dem_filename = 'gt30e060s10'
+                dem_filename = 'e060s10'
             elif (self.rlon >= 60.) and (self.rlon < 120.) and \
                (self.rlat >= -90.) and (self.rlat < -60.):
-                dem_filename = 'gt30e060s60'
+                dem_filename = 'e060s60'
                 
             elif (self.rlon >= 100.) and (self.rlon < 140.) and \
                (self.rlat >= -10.) and (self.rlat < 40.):
-                dem_filename = 'gt30e100n40'
+                dem_filename = 'e100n40'
             elif (self.rlon >= 100.) and (self.rlon < 140.) and \
                (self.rlat >= 40.) and (self.rlat < 90.):
-                dem_filename = 'gt30e100n90'
+                dem_filename = 'e100n90'
             elif (self.rlon >= 100.) and (self.rlon < 140.) and \
                (self.rlat >= -60.) and (self.rlat < -10.):
-                dem_filename = 'gt30e100s10'
+                dem_filename = 'e100s10'
             elif (self.rlon >= 120.) and (self.rlon < 180.) and \
                (self.rlat >= -90.) and (self.rlat < -60.):
-                dem_filename = 'gt30e120s60'
+                dem_filename = 'e120s60'
                 
             elif (self.rlon >= 140.) and (self.rlon < 180.) and \
                (self.rlat >= -10.) and (self.rlat < 40.):
-                dem_filename = 'gt30e140n40'
+                dem_filename = 'e140n40'
             elif (self.rlon >= 140.) and (self.rlon < 180.) and \
                (self.rlat >= 40.) and (self.rlat < 90.):
-                dem_filename = 'gt30e140n90'
+                dem_filename = 'e140n90'
             elif (self.rlon >= 140.) and (self.rlon < 180.) and \
                (self.rlat >= -60.) and (self.rlat < -10.):
-                dem_filename = 'gt30e140s10'
+                dem_filename = 'e140s10'
                 
             elif (self.rlon >= 0.) and (self.rlon < 60.) and \
                (self.rlat >= -90.) and (self.rlat < -60.):
-                dem_filename = 'gt30w000s60'
+                dem_filename = 'w000s60'
                 
             elif (self.rlon >= -20.) and (self.rlon < 20.) and \
                (self.rlat >= -10.) and (self.rlat < 40.):
-                dem_filename = 'gt30w020n40'
+                dem_filename = 'w020n40'
             elif (self.rlon >= -20.) and (self.rlon < 20.) and \
                (self.rlat >= 40.) and (self.rlat < 90.):
-                dem_filename = 'gt30w020n90'
+                dem_filename = 'w020n90'
             elif (self.rlon >= -20.) and (self.rlon < 20.) and \
                (self.rlat >= -60.) and (self.rlat < -10.):
-                dem_filename = 'gt30w020s10'
+                dem_filename = 'w020s10'
                 
             elif (self.rlon >= -60.) and (self.rlon < -20.) and \
                (self.rlat >= -10.) and (self.rlat < 40.):
-                dem_filename = 'gt30w060n40'
+                dem_filename = 'w060n40'
             elif (self.rlon >= -60.) and (self.rlon < -20.) and \
                (self.rlat >= 40.) and (self.rlat < 90.):
-                dem_filename = 'gt30w060n90'
+                dem_filename = 'w060n90'
             elif (self.rlon >= -60.) and (self.rlon < -20.) and \
                (self.rlat >= -60.) and (self.rlat < -10.):
-                dem_filename = 'gt30w060s10'
+                dem_filename = 'w060s10'
             elif (self.rlon >= -60.) and (self.rlon < 0.) and \
                (self.rlat >= -90.) and (self.rlat < -60.):
-                dem_filename = 'gt30w060s60'
+                dem_filename = 'w060s60'
                 
             elif (self.rlon >= -100.) and (self.rlon < -60.) and \
                (self.rlat >= -10.) and (self.rlat < 40.):
-                dem_filename = 'gt30w100n40'
+                dem_filename = 'w100n40'
             elif (self.rlon >= -100.) and (self.rlon < -60.) and \
                (self.rlat >= 40.) and (self.rlat < 90.):
-                dem_filename = 'gt30w100n90'
+                dem_filename = 'w100n90'
             elif (self.rlon >= -100.) and (self.rlon < -60.) and \
                (self.rlat >= -60.) and (self.rlat < -10.):
-                dem_filename = 'gt30w100s10'
+                dem_filename = 'w100s10'
             elif (self.rlon >= -120.) and (self.rlon < -60.) and \
                (self.rlat >= -90.) and (self.rlat < -60.):
-                dem_filename = 'gt30w120s60'
+                dem_filename = 'w120s60'
                 
             elif (self.rlon >= -140.) and (self.rlon < -100.) and \
                (self.rlat >= -10.) and (self.rlat < 40.):
-                dem_filename = 'gt30w140n40'
+                dem_filename = 'w140n40'
             elif (self.rlon >= -140.) and (self.rlon < -100.) and \
                (self.rlat >= 40.) and (self.rlat < 90.):
-                dem_filename = 'gt30w140n90'
+                dem_filename = 'w140n90'
             elif (self.rlon >= -140.) and (self.rlon < -100.) and \
                (self.rlat >= -60.) and (self.rlat < -10.):
-                dem_filename = 'gt30w140s10'
+                dem_filename = 'w140s10'
                 
             elif (self.rlon >= -180.) and (self.rlon < -140.) and \
                (self.rlat >= -10.) and (self.rlat < 40.):
-                dem_filename = 'gt30w180n40'
+                dem_filename = 'w180n40'
             elif (self.rlon >= -180.) and (self.rlon < -140.) and \
                (self.rlat >= 40.) and (self.rlat < 90.):
-                dem_filename = 'gt30w180n90'
+                dem_filename = 'w180n90'
             elif (self.rlon >= -180.) and (self.rlon < -140.) and \
                (self.rlat >= -60.) and (self.rlat < -10.):
-                dem_filename = 'gt30w180s10'
+                dem_filename = 'w180s10'
             elif (self.rlon >= -180.) and (self.rlon < -120.) and \
                (self.rlat >= -90.) and (self.rlat < -60.):
-                dem_filename = 'gt30w180s60'
-                
-            self.dem_file = DEM_DATADIR + "/" + dem_filename + ".dem"
-            self.dem_hdr_file = DEM_DATADIR + "/" + dem_filename + ".hdr"
+                dem_filename = 'w180s60'
+        
+            self.dem_file = os.path.join(self.demdir, (dem_filename + ".dem"))
+            self.dem_hdr_file = os.path.join(self.demdir, (dem_filename + ".hdr"))
+            
+            # Need an alternative method here to find points close to boundary    
+            dem_filename2 = None         
+            if dem_filename2 is not None:
+                print "MAY NEED A SECOND DEM FILE"
     
 ################
 # Plot methods #
