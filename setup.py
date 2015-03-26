@@ -52,13 +52,13 @@ except ImportError as e:
     sys.exit()
 
 # Read the text file with location of where to install
-demfiletxt = open('pyradarmet/demfile_locator.txt', 'r')
-DEMInstall = demfiletxt.readline()
-demfiletxt.close()
+#demfiletxt = open('pyradarmet/demfile_locator.txt', 'r')
+#DEMInstall = demfiletxt.readline()
+#demfiletxt.close()
 
 # Check for trailing directory "/"
-if DEMInstall[-1] is not '/':
-        DEMInstall = DEMInstall + '/'
+#if DEMInstall[-1] is not '/':
+#        DEMInstall = DEMInstall + '/'
 ########
 
 gtopourl="ftp://edcftp.cr.usgs.gov/data/gtopo30/global/"
