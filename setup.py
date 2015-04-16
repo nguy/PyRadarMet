@@ -45,7 +45,7 @@ package_dirs={'':PACKNAME}
 # Check for Pyart package - Avoid conflict with PyPI
 
 try:
-    import pyart.io
+    import pyart
 except ImportError as e:
     print("Could not find PyArt Install\n\
            Please go to https://github.com/ARM-DOE/pyart for PyArt install")

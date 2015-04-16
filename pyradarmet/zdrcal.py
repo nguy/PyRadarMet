@@ -20,11 +20,11 @@ Adapted by Nick Guy from original Fortran code written by David Jorgensen,
 import numpy as np
 import matplotlib.pylab as plt
 
-from pyart.config import get_field_name
 import pyart
 #from .conversion import dBZ2Z, Z2dBZ
 #======================================================================
-def calculate_zdr_offset(radar, debug=False, remove_first_n_gates=None,
+def calculate_zdr_offset(radar, debug=False, 
+                          remove_first_n_gates=None, sample_min=100,
                           rhv_min=None, sig_min=0.5,Htmax=None, dbz_min=None,
                           zdr_field=None, refl_field=None, phidp_field=None,
                           rhv_field=None, kdp_field=None):
@@ -50,6 +50,8 @@ def calculate_zdr_offset(radar, debug=False, remove_first_n_gates=None,
     remove_first_n_gates : float
         Number of gates at the beginning of each ray to to remove from the
         calculation.
+    sample_min : int
+        The minimum number of samples required to perform calculation.
     rhv_min : float
         Minimum copol_coeff value to consider valid.
     sig_min : float
@@ -85,29 +87,29 @@ def calculate_zdr_offset(radar, debug=False, remove_first_n_gates=None,
 #    print radar.fields.keys()
     # parse the field parameters
     if zdr_field is None:
-        zdr_field = get_field_name('differential_reflectivity')
+        zdr_field = pyart.config.get_field_name('differential_reflectivity')
         if zdr_field not in radar.fields:
-           zdr_field = get_field_name('ZDR')
+           zdr_field = pyart.config.get_field_name('ZDR')
     if refl_field is None:
-        refl_field = get_field_name('reflectivity')
+        refl_field = pyart.config.get_field_name('reflectivity')
         if refl_field not in radar.fields:
-           refl_field = get_field_name('DBZ')
+           refl_field = pyart.config.get_field_name('DBZ')
     if rhv_field is None:
-        rhv_field = get_field_name('cross_correlation_ratio')
+        rhv_field = pyart.config.get_field_name('cross_correlation_ratio')
         if rhv_field not in radar.fields:
-           rhv_field = get_field_name('RHOHV')
+           rhv_field = pyart.config.get_field_name('RHOHV')
     if phidp_field is None:
         # use corrrected_differential_phae or unfolded_differential_phase
         # fields if they are available, if not use differential_phase field
-        phidp_field = get_field_name('corrected_differential_phase')
+        phidp_field = pyart.config.get_field_name('corrected_differential_phase')
         if phidp_field not in radar.fields:
-            phidp_field = get_field_name('unfolded_differential_phase')
+            phidp_field = pyart.config.get_field_name('unfolded_differential_phase')
         if phidp_field not in radar.fields:
-            phidp_field = get_field_name('differential_phase')
+            phidp_field = pyart.config.get_field_name('differential_phase')
         if phidp_field not in radar.fields:
-            phidp_field = get_field_name('PHIDP')
+            phidp_field = pyart.config.get_field_name('PHIDP')
     if kdp_field is None:
-        kdp_field = get_field_name('specific_differential_phase')
+        kdp_field = pyart.config.get_field_name('specific_differential_phase')
 
     # Extract data fields
     ZDR = radar.fields[zdr_field]['data']
@@ -151,25 +153,28 @@ def calculate_zdr_offset(radar, debug=False, remove_first_n_gates=None,
     
     # Find volume properites    
     DR_Avg = np.ma.mean(ZDR)
-    DR_Std = np.ma.std(ZDR,ddof=1)
+    DR_Std = np.ma.std(ZDR, ddof=1)
     NGood = np.ma.count(ZDR)
-
-    # Find statistics for filtered (masked) variables
-    DR_HtSum_filt, DR_HtAvg_filt, DR_HtStd_filt, NGood_Ht_filt = calc_stats(ZDR, axHt)
-    RH_HtSum_filt, RH_HtAvg_filt, RH_HtStd_filt, NGood_RH_Ht_filt = calc_stats(Rhv, axHt)
-    dBZ_HtSum_filt, dBZ_HtAvg_filt, dBZ_HtStd_filt, NGood_dBZ_Ht_filt = calc_stats(dBZ, axHt)
-    KDP_HtSum_filt, KDP_HtAvg_filt, KDP_HtStd_filt, NGood_KDP_Ht_filt = calc_stats(KDP, axHt)
-    PhiDP_HtSum_filt, PhiDP_HtAvg_filt, PhiDP_HtStd_filt, NGood_PhiDP_Ht_filt = calc_stats(PhiDP, axHt)
     
-    # Create an output dictionary
-    zdr_bias = create_dict(DR_Avg, DR_Std, NGood, 
-                DR_RaySum, DR_RayAvg, DR_RayStd, NGood_Ray,
-                DR_HtAvg, DR_HtStd, NGood_Ht,
-                RH_HtAvg, dBZ_HtAvg, KDP_HtAvg,
-                ZDR, DR_HtAvg_filt, DR_HtStd_filt,
-                RH_HtAvg_filt, dBZ_HtAvg_filt, KDP_HtAvg_filt, PhiDP_HtAvg_filt,
-                RadName, GenName, Rlat, Rlon, RAlt, time, range, azimuth)
+    if (NGood > sample_min):
+        # Find statistics for filtered (masked) variables
+        DR_HtSum_filt, DR_HtAvg_filt, DR_HtStd_filt, NGood_Ht_filt = calc_stats(ZDR, axHt)
+        RH_HtSum_filt, RH_HtAvg_filt, RH_HtStd_filt, NGood_RH_Ht_filt = calc_stats(Rhv, axHt)
+        dBZ_HtSum_filt, dBZ_HtAvg_filt, dBZ_HtStd_filt, NGood_dBZ_Ht_filt = calc_stats(dBZ, axHt)
+        KDP_HtSum_filt, KDP_HtAvg_filt, KDP_HtStd_filt, NGood_KDP_Ht_filt = calc_stats(KDP, axHt)
+        PhiDP_HtSum_filt, PhiDP_HtAvg_filt, PhiDP_HtStd_filt, NGood_PhiDP_Ht_filt = calc_stats(PhiDP, axHt)
     
+        # Create an output dictionary
+        zdr_bias = create_dict(DR_Avg, DR_Std, NGood, 
+                    DR_RaySum, DR_RayAvg, DR_RayStd, NGood_Ray,
+                    DR_HtAvg, DR_HtStd, NGood_Ht,
+                    RH_HtAvg, dBZ_HtAvg, KDP_HtAvg,
+                    ZDR, DR_HtAvg_filt, DR_HtStd_filt,
+                    RH_HtAvg_filt, dBZ_HtAvg_filt, KDP_HtAvg_filt, PhiDP_HtAvg_filt,
+                    RadName, GenName, Rlat, Rlon, RAlt, time, range, azimuth)
+    
+    else:
+        zdr_bias = None
     # Send back the dictionary containing data.
     return zdr_bias
 #======================================================================

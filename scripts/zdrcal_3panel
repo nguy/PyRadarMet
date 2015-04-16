@@ -14,6 +14,7 @@ from pyradarmet.zdrcal import plot_zdr_rhv,plot_add_stats,oplot_zdr_rhv,plot_3pa
 #======================================================================
 # The user can modify these next variables to control how the program processes data
 minSig = 0.5 # Maximum standard deviation to accept in analysis
+minSample = 100 # Minimum number of samples used to perform calculations
 mindBZ = 5. # Minimum reflectivity to accept in analysis (proxy for SNR)
 gateSkip = 6 # The number of gates at the beginning or array (closest to radar) to cut out
 minRhv = 0.8 # Minimum correlation coefficient to accept in analysis
@@ -100,50 +101,57 @@ if __name__ == '__main__':
             radar = pyart.io.read(file)
 
         # Call the bias calculation routine
-        zdr_bias = zdrcal(radar,remove_first_n_gates=gateSkip,rhv_min=minRhv,
-           sig_min=minSig,dbz_min=mindBZ,Htmax=maxHt)
-        txVar = ("Avg Zdr: "+str(zdr_bias['volume_average'])+"  Std Dev: "+str(zdr_bias['volume_standard_deviation'])+
-          "  Good Pts: "+str(zdr_bias['volume_number_good'])+" File: "+os.path.basename(fName))
-        print txVar
+        zdr_bias = zdrcal(radar, remove_first_n_gates=gateSkip, sample_min=minSample,\
+                          rhv_min=minRhv, sig_min=minSig, dbz_min=mindBZ, Htmax=maxHt)
         
-        if zdr_bias['volume_standard_deviation'] > minSig:
-            Stats[index,0] = np.ma.masked
-            Stats[index,1] = np.ma.masked
-            Stats[index,2] = np.ma.masked
-        else:
-            Stats[index,0] = zdr_bias['volume_average']
-            Stats[index,1] = zdr_bias['volume_standard_deviation']
-            Stats[index,2] = zdr_bias['volume_number_good']
+        if zdr_bias is not None:
+            txVar = ("Avg Zdr: "+str(zdr_bias['volume_average'])+\
+                     "  Std Dev: "+str(zdr_bias['volume_standard_deviation'])+\
+                     "  Good Pts: "+str(zdr_bias['volume_number_good'])+\
+                     " File: "+os.path.basename(fName))
         
-        # Create plot if desired
-        if args.plot:
-            if index == 0:
+            if zdr_bias['volume_standard_deviation'] > minSig:
+                Stats[index,0] = np.ma.masked
+                Stats[index,1] = np.ma.masked
+                Stats[index,2] = np.ma.masked
+            else:
+                Stats[index,0] = zdr_bias['volume_average']
+                Stats[index,1] = zdr_bias['volume_standard_deviation']
+                Stats[index,2] = zdr_bias['volume_number_good']
+        
+            # Create plot if desired
+            if args.plot:
+                if index == 0:
 ##                fig, ax1, ax2, ax3 = plot_3panel(zdr_bias['dbz_height_average'],
 ####                    zdr_bias['height_average'],zdr_bias['kdp_height_average'],
 ##                    zdr_bias['height_average'],zdr_bias['height_standard_deviation'],
  ##                   zdr_bias['range']['data']/1000.,ymax=maxHt,
-                fig, ax1, ax2, ax3 = plot_3panel(zdr_bias['dbz_height_average_filt'],
+                    fig, ax1, ax2, ax3 = plot_3panel(zdr_bias['dbz_height_average_filt'],
 ##                    zdr_bias['height_average_filt'],zdr_bias['phidp_height_average_filt'],
-                    zdr_bias['height_average_filt'],zdr_bias['height_standard_deviation_filt'],
-                    zdr_bias['range']['data']/1000.,ymax=maxHt,
-                    xlims1=zh_lims,xlims2=dr_lims,xlims3=std_lims,
-                    label=True,labelTx=zdr_bias['radar_name'],X3lab='Std Dev')
-            else:
-                if zdr_bias['height_standard_deviation'].mean() > minSig:
-                    alff = 0.1
+                        zdr_bias['height_average_filt'],zdr_bias['height_standard_deviation_filt'],
+                        zdr_bias['range']['data']/1000.,ymax=maxHt,
+                        xlims1=zh_lims,xlims2=dr_lims,xlims3=std_lims,
+                        label=True,labelTx=zdr_bias['radar_name'],X3lab='Std Dev')
                 else:
-                    alff = 1.
-                oplot_3panel(zdr_bias['dbz_height_average'],zdr_bias['height_average'],
-                    zdr_bias['height_standard_deviation'],zdr_bias['range']['data']/1000.,
-                    ax1=ax1,ax2=ax2,ax3=ax3,alf=alff)
-        # Increment indices
-        index += 1
-        if zdr_bias['height_standard_deviation'].mean() > minSig:
-            indexGood += 1
+                    if zdr_bias['height_standard_deviation'].mean() > minSig:
+                        alff = 0.1
+                    else:
+                        alff = 1.
+                    oplot_3panel(zdr_bias['dbz_height_average'],zdr_bias['height_average'],
+                        zdr_bias['height_standard_deviation'],zdr_bias['range']['data']/1000.,
+                        ax1=ax1,ax2=ax2,ax3=ax3,alf=alff)
+            # Increment indices
+            index += 1
+            if zdr_bias['height_standard_deviation'].mean() > minSig:
+                indexGood += 1
             
-        RadName = zdr_bias['radar_name']
+            RadName = zdr_bias['radar_name']
         
-        del zdr_bias
+            del zdr_bias
+        # If zdr_bias returns None, then too few samples were uncovered.
+        else:
+            txVar = ("Not enough samples in volume")
+        print txVar
 
     if multiStat:
         plot_add_stats(instance='multi',avg=Stats[:,0].mean(),
