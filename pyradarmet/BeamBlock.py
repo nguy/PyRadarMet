@@ -17,8 +17,10 @@ import struct
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
+from matplotlib.path import Path
 from glob import glob
 import os
+import subprocess
 import netCDF4 as nc4
 import time
 from pkg_resources import Requirement, resource_filename
@@ -227,7 +229,7 @@ class BeamBlock(object):
         '''Read a DEM file if passed or search for correct file
         '''
         if self.dem_hdr_file is None:
-            if (upper_left_x is None) or (upper_left_y is None):
+            if (self.upper_left_x is None) or (self.upper_left_y is None):
                 print "Must prived upper_left_x and upper_left_y if \
                        no DEM header file is supplied"
         self.read_gt30_dem()
@@ -239,16 +241,21 @@ class BeamBlock(object):
         http://stevendkay.wordpress.com/tag/dem/
         '''
         if isinstance(self.dem_hdr_file, str) != False:
-            hdr = np.loadtxt(self.dem_hdr_file, dtype='S20')
-            nrows = int(hdr[2][1])
-            ncols = int(hdr[3][1])
-            missing = hdr[9][1]
-            upper_left_x = float(hdr[10][1])
-            upper_left_y = float(hdr[11][1])
-            xdim = float(hdr[12][1])
-            ydim = float(hdr[13][1])
+            # wrap header in dict, because the different elements aren't necessarily in the same row
+            hdr = dict(np.loadtxt(self.dem_hdr_file, dtype='S20'))
+            byteorder = hdr['BYTEORDER']
+            pixeltype = hdr['PIXELTYPE']
+            nrows = int(hdr['NROWS'])
+            ncols = int(hdr['NCOLS'])
+            missing = int(hdr['NODATA'])
+            upper_left_x = float(hdr['ULXMAP'])
+            upper_left_y = float(hdr['ULYMAP'])
+            xdim = float(hdr['XDIM'])
+            ydim = float(hdr['YDIM'])
         else:
             # From the output_parameters.hdr file or product documentation
+            byteorder = 'M'
+            pixeltype = 'UNSIGNEDINT'
             upper_left_x = self.upper_left_x
             upper_left_y = self.upper_left_y
             nrows = 6000
@@ -261,9 +268,19 @@ class BeamBlock(object):
         fi = open(self.dem_file, "rb")
         databin = fi.read()
         fi.close()
-            
+
+        # check for pixeltype, this has to be reviewed
+        if pixeltype == 'SIGNEDINT':
+            format = 'h'
+        if pixeltype == 'UNSIGNEDINT':
+            format = 'H'
         # Unpack binary data into a flat tuple z
-        s = ">%dH" % (nrows * ncols,)
+        # check for byteorder
+        if byteorder == 'M':
+            s = ">%d%s" % (nrows * ncols, format,)
+        else:
+            s = "<%d%s" % (nrows * ncols, format,)
+
         z = struct.unpack(s, databin)
         
         topo = np.zeros((nrows, ncols))
@@ -286,7 +303,7 @@ class BeamBlock(object):
                           (lon <= (self.rlon + londel)))
         latInd = np.where((lat >= (self.rlat - latdel)) & \
                           (lat <= (self.rlat + latdel)))
-        
+
         lonSub = lon[np.min(lonInd):np.max(lonInd)]
         latSub = lat[np.min(latInd): np.max(latInd)]
         self.lon, self.lat = np.meshgrid(lonSub, latSub)
@@ -406,6 +423,67 @@ class BeamBlock(object):
     def _check_dem_file(self):
         '''Check if dem file is passed and set if not'''
         ###Add ability to stitch 2 files together self.rlon - londel
+        # Set the radar min and max longitude to plot, arbitrary chosen
+        minlat, maxlat = self.rlat - 4, self.rlat + 4
+        minlon, maxlon = self.rlon - 4, self.rlon + 4
+
+        # get radar bounding box corner coords
+        radar_corners = np.array([[minlon, minlat], [minlon, maxlat],
+                            [maxlon, maxlat], [maxlon, minlat]])
+
+        # file list which will take the found hdr files
+        flist = []
+
+        # iterate over dem files, besides antarcps
+        for dem_hdr_file in sorted(glob(os.path.join(self.demdir, '[e,w]*.hdr'))):
+            hdr = dict(np.loadtxt(dem_hdr_file, dtype='S20'))
+            nrows = int(hdr['NROWS'])
+            ncols = int(hdr['NCOLS'])
+            missing = int(hdr['NODATA'])
+            upper_left_x = float(hdr['ULXMAP'])
+            upper_left_y = float(hdr['ULYMAP'])
+            xdim = float(hdr['XDIM'])
+            ydim = float(hdr['YDIM'])
+
+            lower_right_x = upper_left_x + ncols * xdim
+            lower_right_y = upper_left_y - nrows * ydim
+
+            # construct dem bounding box
+            dem_bbox = [[upper_left_x, lower_right_y], [upper_left_x, upper_left_y],
+                        [lower_right_y, upper_left_y], [lower_right_x, lower_right_y]]
+
+            # make matplotlib Path from dem bounding box
+            dem_bbox_path = Path(dem_bbox)
+
+            # check if radar corner points are inside
+            inside = dem_bbox_path.contains_points(radar_corners)
+
+            # if inside put file into list
+            if np.any(inside):
+                dem_filename, ext = os.path.splitext(dem_hdr_file)
+                flist.append(dem_filename + '.dem')
+                if np.all(inside):
+                    break
+
+        # construct gdalbuildvirt command
+        command = ['gdalbuildvrt', '-overwrite', '-te', str(minlon), str(minlat),
+                   str(maxlon), str(maxlat), os.path.join(self.demdir, 'interim.vrt')]
+
+        for f in flist:
+            command.append(f)
+
+        # call gdalbuildvirt subprocess
+        subprocess.call(command)
+        vrt_file = os.path.join(self.demdir, 'interim.vrt')
+        dem_file = os.path.join(self.demdir, 'interim.dem')
+        # call gdalwarp subprocess
+        command = ["gdalwarp", '-of', 'Ehdr', '-overwrite', vrt_file, dem_file]
+        subprocess.call(command)
+
+        # set filenames
+        self.dem_file = dem_file
+        self.dem_hdr_file = os.path.join(self.demdir, 'interim.hdr')
+
         if self.dem_file is None:
             if (self.rlon >= -180.) and (self.rlon < 180.) and \
                (self.rlat >= -90.) and (self.rlat < -60.):
