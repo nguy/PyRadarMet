@@ -13,16 +13,16 @@ from pyradarmet.zdrcal import calculate_zdr_offset as zdrcal
 from pyradarmet.zdrcal import plot_zdr_rhv,plot_add_stats,oplot_zdr_rhv
 #======================================================================
 # The user can modify these next variables to control how the program processes data
-minSig = 0.5 # Maximum standard deviation to accept in analysis
-minSample = 100 # Minimum number of samples used to perform calculations
-mindBZ = 5. # Minimum reflectivity to accept in analysis (proxy for SNR)
-gateSkip = 7 # The number of gates at the beginning or array (closest to radar) to cut out
-minRhv = 0.85 # Minimum correlation coefficient to accept in analysis
-maxHt = 5. # Maximum height to accept in analysis
-zh_lims = [-20.,30.] # Range of Reflectivity to plot
-rh_lims = [.8,1.] # Range of Copolar Correlation Coefficient to plot
-dr_lims = [-1.5,1.5] # Range of Differential reflectivity to plot
-kd_lims = [.2,.4] # Range of Specific Differential Phase to plot
+MINSIG = 0.5 # Maximum standard deviation to accept in analysis
+MINSAMPLE = 100 # Minimum number of samples used to perform calculations
+MINDBZ = 5. # Minimum reflectivity to accept in analysis (proxy for SNR)
+GATESKIP = 7 # The number of gates at the beginning or array (closest to radar) to cut out
+MINRHV = 0.85 # Minimum correlation coefficient to accept in analysis
+MAXHT = 5. # Maximum height to accept in analysis
+ZH_LIMS = [-20., 30.] # Range of Reflectivity to plot
+RH_LIMS = [0.8, 1.0] # Range of Copolar Correlation Coefficient to plot
+DR_LIMS = [-1.5, 1.5] # Range of Differential reflectivity to plot
+KD_LIMS = [0.2, 0.4] # Range of Specific Differential Phase to plot
 
 pOut = "zdr_bias"
 pType = "png"
@@ -98,8 +98,8 @@ if __name__ == '__main__':
             radar = pyart.io.read(file)
 
         # Call the bias calculation routine
-        zdr_bias = zdrcal(radar, remove_first_n_gates=gateSkip, sample_min=minSample,\
-                          rhv_min=minRhv, sig_min=minSig, dbz_min=mindBZ, Htmax=maxHt)
+        zdr_bias = zdrcal(radar, remove_first_n_gates=GATESKIP, sample_min=MINSAMPLE,\
+                          rhv_min=MINRHV, sig_min=MINSIG, dbz_min=MINDBZ, Htmax=MAXHT)
                   
         # If minimun number of samples is met
         if zdr_bias is not None:
@@ -109,7 +109,7 @@ if __name__ == '__main__':
                      "  Good Pts: "+str(zdr_bias['volume_number_good'])+\
                      " File: "+os.path.basename(fName))
         
-            if zdr_bias['volume_standard_deviation'] > minSig:
+            if zdr_bias['volume_standard_deviation'] > MINSIG:
                 Stats[index,0] = np.ma.masked
                 Stats[index,1] = np.ma.masked
                 Stats[index,2] = np.ma.masked
@@ -121,22 +121,26 @@ if __name__ == '__main__':
             # Create plot if desired
             if args.plot:
                 if index == 0:
-                    fig, ax,axes = plot_zdr_rhv(zdr_bias['height_average'],zdr_bias['rhv_height_average'],
-                        zdr_bias['range']['data']/1000.,ymax=maxHt,
-                        xlims1=dr_lims,xlims2=rh_lims,
-                        label=True,labelTx=zdr_bias['radar_name'])
+                    fig, ax, axes = plot_zdr_rhv(zdr_bias['height_average'],\
+                                      zdr_bias['rhv_height_average'],\
+                                      zdr_bias['range']['data']/1000.,\
+                                      ymax=MAXHT,\
+                                      xlims1=DR_LIMS, xlims2=RH_LIMS,\
+                                      label=True, labelTx=zdr_bias['radar_name'])
                 else:
-##                if zdr_bias['volume_standard_deviation'] > minSig:
-                    if zdr_bias['height_standard_deviation'].mean() > minSig:
+##                if zdr_bias['volume_standard_deviation'] > MINSIG:
+                    if zdr_bias['height_standard_deviation'].mean() > MINSIG:
                         alff = 0.1
                     else:
                         alff = 1.
-                    oplot_zdr_rhv(zdr_bias['height_average'],zdr_bias['rhv_height_average'],
-                        zdr_bias['range']['data']/1000.,ax=axes,alf=alff)
+                    oplot_zdr_rhv(zdr_bias['height_average'],\
+                                  zdr_bias['rhv_height_average'],\
+                                  zdr_bias['range']['data']/1000., \
+                                  ax=axes, alf=alff)
             # Increment indices
             index += 1
-##        if zdr_bias['volume_standard_deviation'] <= minSig:
-            if zdr_bias['height_standard_deviation'].mean() <= minSig:
+##        if zdr_bias['volume_standard_deviation'] <= MINSIG:
+            if zdr_bias['height_standard_deviation'].mean() <= MINSIG:
                 indexGood += 1
             
             RadName = zdr_bias['radar_name']
@@ -150,9 +154,10 @@ if __name__ == '__main__':
         print txVar
         OutTx.write(txVar+"\n")
 
-    OutTx.write("ALL FILES WITH STD DEV < "+str(minSig)+" YIELD ("+str(indexGood)+" files)::\n")
-    txVar = ("Avg Zdr: "+str(Stats[:,0].mean())+"  Std Dev: "+str(Stats[:,1].mean())+
-          "  Good Pts: "+str(Stats[:,2].sum()))
+    OutTx.write("ALL FILES WITH STD DEV < "+str(MINSIG)+" YIELD ("+str(indexGood)+" files)::\n")
+    txVar = ("Avg Zdr: "+str(Stats[:,0].mean())+\
+             "  Std Dev: "+str(Stats[:,1].mean())+\
+             "  Good Pts: "+str(Stats[:,2].sum()))
     OutTx.write(txVar+"\n")
     OutTx.close()
     
@@ -161,11 +166,12 @@ if __name__ == '__main__':
     os.system(cmd)
     
     if multiStat:
-        plot_add_stats(instance='multi',avg=Stats[:,0].mean(),
-                        sd=Stats[:,1].mean(),points=Stats[:,2].sum(),
-                        good_samples=indexGood,tot_samples=index)
+        plot_add_stats(instance='multi', avg=Stats[:,0].mean(),\
+                        sd=Stats[:,1].mean(), points=Stats[:,2].sum(),\
+                        good_samples=indexGood, tot_samples=index)
     else:
-        plot_add_stats(instance='single',avg=Stats[0,0],sd=Stats[0,1],points=Stats[0,2])
+        plot_add_stats(instance='single', avg=Stats[0,0],\
+                        sd=Stats[0,1], points=Stats[0,2])
         
 #    plt.show()
 # Create final output file name
