@@ -1,5 +1,5 @@
 PyRadarMet
-=============== 
+===============
 Python Fundamental Calculations in Radar Meteorology package notes
 
 Originally Created:   5 February 2014
@@ -15,23 +15,23 @@ attenuation.py – Routines to calculate coefficients useful in attenuation calc
 conversion.py – Routines to convert linear to log reflectivity and vice versa
 
 doppler.py – Routines to calculate a number of fundamental Doppler radar characteristics
-              including unambiguous range and velocity, 
+              including unambiguous range and velocity,
               “Doppler dilemma” equation, dual PRF Vmax,…
 
-geometry.py – Routines to calculate such characteristics as effective radius, 
-               half-power radius, ray height, sample volumes, range corrections, 
+geometry.py – Routines to calculate such characteristics as effective radius,
+               half-power radius, ray height, sample volumes, range corrections,
                beam blockage fractions,…
 
-system.py – Routines to calculate such characteristics as wavelength, frequency, 
+system.py – Routines to calculate such characteristics as wavelength, frequency,
              pulse length, radar constant, effective antenna area, thermal noise, …
 
-variables.py – Routines to calculate such characteristics as CDR, LDR, ZDR, ZDP,…  
+variables.py – Routines to calculate such characteristics as CDR, LDR, ZDR, ZDP,…
                 This is really basic at the moment as I haven’t even attempted
                 dual-pol calcs as of yet.
-                
+
 zdrcal.py – Routines to calculate ZDR offset of a dual-polarimetric radar.  This is called
               by an executable called cal_zdr.
-              
+
 BeamBlock - A class that allows the calculation of the geometric beam blocking.
 
 ## News
@@ -45,7 +45,7 @@ Special packages (e.g. BeamBlock, ZDR cal scripts) are currently only available 
 
 ## Installation
 There are two options for install.  The setup script now downloads the data listed below
-automatically.  
+automatically.
 
 To download and install the data within the package directory:
 
@@ -61,7 +61,7 @@ The variable is 'GTOPO_DATA' and can be set on unix systems (in a bash environme
 export GTOPO_DATA=/some/direcoty/for/the/data
 ```
 
-It is recommended that this be done in a shell profile file like .bashrc or .bash_profile 
+It is recommended that this be done in a shell profile file like .bashrc or .bash_profile
 Then run the install command:
 ```python
 python setup.py install
@@ -73,7 +73,7 @@ The install took about 250 seconds when installed as part of the package.
 
 ##Data
 The data folder holds Digital Elevation Model data used in the BeamBlock routine.
-The data is the GTOPO30, a 30-arc second (~ 1 km) elevation data set.  
+The data is the GTOPO30, a 30-arc second (~ 1 km) elevation data set.
 Data available from the U.S. Geological Survey.
 Downloaded from the [long term archive](https://lta.cr.usgs.gov/),
 
@@ -91,12 +91,10 @@ It uses a typical scientific python stack:
 [matplotlib](http://matplotlib.org)
 
 ## Notes
-This software was originally an attempt to help me get used to programming in Python environment.  
+This software was originally an attempt to help me get used to programming in Python environment.
 I have tested more since it was originally developed and have modified accordingly.
 
-Please feel free to contact me with questions or suggestions.  
+Please feel free to contact me with questions or suggestions.
 Do note this is a side project and it may take me some time to respond.
 
 This is open-source software, with no warranties extended.
-
-Nick Guy (nick.guy@noaa.gov)
