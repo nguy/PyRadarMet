@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>PyRadarMet by nguy</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>PyRadarMet</h1>
+        <p>Python Fundamental Calculations for Radar Meteorology</p>
+
+        <p class="view"><a href="https://github.com/nguy/PyRadarMet">View the Project on GitHub <small>nguy/PyRadarMet</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/nguy/PyRadarMet/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/nguy/PyRadarMet/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/nguy/PyRadarMet">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h3>
+<a id="welcome-to-pyradarmet" class="anchor" href="#welcome-to-pyradarmet" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Welcome to PyRadarMet!</h3>
+
+<p>This software package offers a number of basic weather radar calculations in a pure python environment. Many of the functions are general use radar routines.</p>
+
+<h3>
+<a id="news" class="anchor" href="#news" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>News</h3>
+
+<p>This module has be ported over to an <a href="http://cran.r-project.org/web/packages/radar/">R package</a> by Jose Gama.<br>
+Also, PyRadarMet is undergoing a port into the <a href="http://wradlib.bitbucket.org/">wradlib</a> python package.<br>
+Most fundamental modules are (or have been) ported currently into both packages.<br>
+Special packages (e.g. BeamBlock, ZDR cal scripts) are currently only available in PyRadarMet.</p>
+
+<h3>
+<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+
+<p>Authored by Nick Guy (<a href="https://github.com/nguy" class="user-mention">@nguy</a>)<br><br>
+Contributors:<br>
+Timothy Lang (<a href="https://github.com/tjlang" class="user-mention">@tjlang</a>)<br>
+Kai Muehlbauer (<a href="https://github.com/kmuehlbauer" class="user-mention">@kmuehlbauer</a>)</p>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>There are two options for install.  The setup script now downloads the data listed below
+automatically.<br>
+To download and install the data within the package directory:</p>
+
+<div class="highlight highlight-source-python"><pre>python setup.py install</pre></div>
+
+<p>This is the most robust way, as the data is always a relative path stored within the python 'egg'.</p>
+
+<p>To download the data and install it to a user-specified location an environmental variable must be set.
+The variable is 'GTOPO_DATA' and can be set on unix systems (in a bash environment) as such:</p>
+
+<div class="highlight highlight-source-python"><pre>export <span class="pl-c1">GTOPO_DATA</span><span class="pl-k">=</span><span class="pl-k">/</span>some<span class="pl-k">/</span>direcoty<span class="pl-k">/</span><span class="pl-k">for</span><span class="pl-k">/</span>the<span class="pl-k">/</span>data</pre></div>
+
+<p>It is recommended that this be done in a shell profile file like .bashrc or .bash_profile 
+Then run the install command:</p>
+
+<div class="highlight highlight-source-python"><pre>python setup.py install</pre></div>
+
+<p>The install took about 150 seconds on a university connection when installed in an external directory.</p>
+
+<p>The install took about 250 seconds when installed as part of the package.</p>
+
+<h3>
+<a id="data" class="anchor" href="#data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Data</h3>
+
+<p>The data folder holds Digital Elevation Model data used in the BeamBlock routine.
+The data is the GTOPO30, a 30-arc second (~ 1 km) elevation data set.<br>
+Data available from the U.S. Geological Survey.
+Downloaded from the <a href="https://lta.cr.usgs.gov/">long term archive</a>, using the <a href="http://earthexplorer.usgs.gov/">EarthExplorer</a> tool.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/nguy">nguy</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
