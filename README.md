@@ -37,9 +37,10 @@ BeamBlock - A class that allows the calculation of the geometric beam blocking.
 ## News
 This module has be ported over to an [R package](http://cran.r-project.org/web/packages/radar/) by Jose Gama.
 
-Also, PyRadarMet is undergoing a port into the [wradlib](http://wradlib.bitbucket.org/) python package.
+PyRadarMet is undergoing a port into the [wradlib](http://wradlib.bitbucket.org/) python package.
 
-Most fundamental modules are (or have been) ported currently into both packages.
+Some modules now exist in wradlib. Many fundamental calculations are planned to
+be moved the [CSU_RadarTools](https://github.com/CSU-Radarmet/CSU_RadarTools) python package.
 
 Special packages (e.g. BeamBlock, ZDR cal scripts) are currently only available in PyRadarMet.
 
