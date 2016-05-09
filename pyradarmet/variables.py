@@ -183,12 +183,16 @@ def zdp(z_h, z_v):
 
     Alternating horizontally and linearly polarized pulses are averaged.
     """
+    zh = np.atleast_1d(z_h)
+    zv = np.atleast_1d(z_v)
+    if len(zh) != len(zv):
+        raise ValueError('Input variables must be same length')
+        return
 
-    if z_h > z_v:
-        return 10.* np.log10(z_h - z_v)
-    else:
-        print("Horizontal reflectivity < Horizontal reflectivity !")
-        return np.nan
+    zdp = np.full_like(zh, np.nan)
+    good = np.where(zh > zv)
+    zdp[good] = 10.* np.log10(zh[good] - zv[good])
+    return zdp
 
 
 def hdr(dbz_h, zdr):
@@ -220,17 +224,14 @@ def hdr(dbz_h, zdr):
     Picca and Ryzhkof (2012) mention that this does not take into account
     the hail melting process.  So use at your own risk!
     """
+    zdr = np.atleast_1d(zdr)
     # Set the f(zdr) based upon observations
-    f = np.empty_like(np.atleast_1d(zdr))
-##    f[zdr <= 0] = 27.
-##    f[np.where((zdr > 0) & (zdr <= 1.74))] = 19. * zdr[np.where((zdr > 0) & (zdr <= 1.74))] + 27.
-##    f[np.where(zdr > 1.74)] = 60.
-    if zdr <= 0:
-        f = 27.
-    elif zdr > 0 and zdr <= 1.74:
-        f = 19. * zdr + 27.
-    else zdr > 1.74:
-        f = 60.
-
+    f = np.full_like(zdr, np.nan)
+    negind = np.where(zdr <= 0)
+    lowind = np.where((zdr > 0) & (zdr <= 1.74))
+    highind = np.where(zdr > 1.74)
+    f[negind] = 27.
+    f[lowind] = 19. * zdr[lowind] + 27.
+    f[highind] = 60.
     # Calculate HDR
     return np.asarray(dbz_h) - f

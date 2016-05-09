@@ -9,25 +9,6 @@ References
 ----------
 Rinehart (1997), Radar for Meteorologists.
 """
-# NOTES::
-#   Arrays seem to be able to be passed, but make sure they are float arrays
-#    (e.g. created with numpy) and not lists
-#
-# FUNCTIONS::
-# gain_Pratio - Radar gain by power ratio
-# freq - Frequency
-# wavelength - Wavelength
-# pulse_length - Pulse Length
-# pulse_duration - Pulse duration
-# radar_const - Radar constant
-# ant_eff_area - Antenna effective area
-# power_target - Power intecepted by a target
-# xsec_bscatter_sphere - Backscattering cross-sectional area of sphere
-# norm_xsec_bscatter_sphere - Normalized backscattering cross-sectional area of sphere
-# size_param - Size parameter of scatterer
-# power_return_target - Power returned by spherical target
-# thermal_noise - Thermal noise power
-#-------------------------------------------------------------------
 import numpy as np
 
 
