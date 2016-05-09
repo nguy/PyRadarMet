@@ -1,14 +1,13 @@
+# -*- coding: utf-8 -*-
 """
 pyradarmet.system
-=========================
+=================
 
-A grouping of functions that calculate a number of radar system characteristics.
+Functions to calculate radar system characteristics.
 
-Author:
-Nick Guy  NOAA/NSSL, NRC (nick.guy@noaa.gov)
-
-3 Feb 2014 - Created
-
+References
+----------
+Rinehart (1997), Radar for Meteorologists.
 """
 # NOTES::
 #   Arrays seem to be able to be passed, but make sure they are float arrays
@@ -29,485 +28,306 @@ Nick Guy  NOAA/NSSL, NRC (nick.guy@noaa.gov)
 # power_return_target - Power returned by spherical target
 # thermal_noise - Thermal noise power
 #-------------------------------------------------------------------
-# Load the needed packages
 import numpy as np
 
-###################
-# DEFINE CONTSTANTS
-###################
-SLP = 1013.25 # Sea-level Pressure [hPa]
-P0 = 1000.  # Reference pressure [hPa]
-c = 3e8 # Speed of light [m/s]
-Re = 6374000 # Earth's radius [m]
-R43 = Re*4./3. # 4/3 Approximation effective radius for standard atmosphere [m]
+
+speed_of_light = 3e8 # Speed of light [m/s]
 kBoltz = 1.381e-23 # Boltzmann's constant [ m^2 kg s^-2 K^-1]
 
-###################
-# BEGIN FUNCTIONS
-###################
-
-def gain_Pratio(P1, P2):
+def gain_Pratio(p1, p2):
     """
-    Antenna gain via power ratio.  
-    
+    Antenna gain [dB] via power ratio.
+
     From Rinehart (1997), Eqn 2.1
-    
-    INPUT::
-    -----
-    P1 : float
+
+    Parameters
+    ----------
+    p1 : float or array
         Power on the beam axis [W]
-    P2 : float
+    p2 : float or array
         Power from an isotropic antenna [W]
-    
-    OUPUT::
-    -----
-    G : float
-        Gain [dB]
-    
-    USAGE::
-    -----
-    G = RadGain_Pratio(P1,P2)
-    
-    NOTES::
+
+    Notes
     -----
     Ensure that both powers have the same units!
+    If arrays are used, either for one okay, or both must be the same length.
     """
+    return 10. * np.log10(np.asarray(p1) / np.asarray(p2))
 
-    G = 10. * np.log10(P1 / P2)
-
-    return G
-    
-#==============
 
 def freq(lam):
     """
-    Frequency given wavelength.
-    
-    INPUT::
-    -----
-    lam : float
+    Frequency [Hz] given wavelength.
+
+    Parameters
+    ----------
+    lam : float or array
         Wavelength [m]
-    
-    OUPUT::
-    -----
-    freq : float
-        Frequency [Hz]
-    
-    USAGE::
-    -----
-    freq = freq(lam)
     """
+    return speed_of_light / np.asarray(lam)
 
-    freq = c / lam
-
-    return freq
-    
-#===============
 
 def wavelength(freq):
     """
-    Wavelength given frequency.
-    
-    INPUT::
-    -----
-    freq : float
+    Wavelength [m] given frequency.
+
+    Parameters
+    ----------
+    freq : float or array
         Frequency [Hz]
-    
-    OUPUT::
-    -----
-    lam : float
-        Wavelength [m]
-    
-    USAGE::
-    -----
-    lam = wavelength(freq)
     """
+    return speed_of_light / np.asarray(freq)
 
-    lam = c / freq
 
-    return lam
-    
-#==============
-
-def pulse_length(pDur):
+def pulse_length(pdur):
     """
-    Pulse length given pulse duration.
-    
-    INPUT::
-    -----
-    pDur : float
+    Pulse length [m] given pulse duration.
+
+    Parameters
+    ----------
+    pDur : float or array
         Pulse duration [s]
-    
-    OUPUT::
+
+    Notes
     -----
-    tau : float
-        Pulse length [m]
-    
-    USAGE::
-    -----
-    tau = pulse_length(pDur)
-    
-    NOTES::
-    -----
-    This equation is only interested in pulses that return to radar, leading
-       to the factor of 1/2.
+    This equation is only interested in return pulses to radar, leading
+    to the factor of 1/2.
     """
+    return speed_of_light * np.asarray(pdur) / 2.
 
-    tau = c * pDur / 2.
-
-    return tau
-    
-#==============
 
 def pulse_duration(tau):
     """
-    Pulse duration from pulse length.
-    
-    INPUT::
-    -----
-    tau : float
+    Pulse duration [s] from pulse length.
+
+    Parameters
+    ----------
+    tau : float or array
         Pulse length [m]
-    
-    OUPUT::
-    -----
-    pDur : float
-        Pulse duration [s]
-    
-    USAGE::
-    -----
-    pDur = pulse_duration(tau)
     """
+    return 2 * np.asarray(tau) / speed_of_light
 
-    pDur = 2 * tau / c
 
-    return pDur
-    
-#===============
-
-def radar_const(Pt, G, Tau, lam, bwH, bwV, Lm, Lr):
+def radar_const(power_t, gain, tau, lam, bw_h, bw_v, aloss, rloss):
     """
-    Radar constant.
-    
+    Radar constant. Unitless.
+
     From CSU Radar Meteorology notes, AT 741
-    
-    INPUT::
-    -----
-    Pt : float
+
+    Parameters
+    ----------
+    power_t : float
         Transmitted power [W]
-    G : float
+    gain : float
         Antenna Gain [dB]
-    Tau : float
+    tau : float
         Pulse Width [s]
     lam : float
         Radar wavelength [m]
-    bwH : float
+    bw_h : float
         Horizontalntenna beamwidth [degrees]
-    bwV : float
+    bw_v : float
         Vertical antenna beamwidth [degrees]
-    Lm : float
+    aloss : float
         Antenna/waveguide/coupler loss [dB]
-    Lr : float
+    rloss : float
         Receiver loss [dB]
-    
-    OUPUT::
-    -----
-    C : float
-        Radar constant [unitless]
-    
-    USAGE::
-    -----
-    C = radar_constant(Pt,G,Tau,lam,bwidth,Lm,Lr)
     """
-
     # Convert from dB to linear units
-    Lmlin = 10**(Lm / 10.)
-    Lrlin = 10**(Lr / 10.)
-    Glin = 10**(G / 10.)
+    alosslin = 10**(aloss / 10.)
+    rlosslin = 10**(rloss / 10.)
+    gainlin = 10**(gain / 10.)
 
     # Convert beamwidth to radians
-    bwHr = np.deg2rad(bwH)
-    bwVr = np.deg2rad(bwV)
+    bw_hr = np.deg2rad(bw_h)
+    bw_vr = np.deg2rad(bw_v)
 
     # Calculate the numerator
-    Numer = np.pi**3 * c * Pt * Glin**2 * Tau * bwHr * bwVr * Lmlin * Lrlin
+    Numer = (np.pi**3 * speed_of_light * power_t * gainlin**2 * tau *
+             bw_hr * bw_vr * alosslin * rlosslin)
 
     # Calculate the denominator
     Denom = 1024. * np.log(2) * lam**2
+    return Numer/Denom
 
-    C = Numer/Denom
 
-    return C
-    
-#============
-
-def ant_eff_area(G, lam):
+def ant_eff_area(gain, lam):
     """
-    Antenna effective area.
-    
+    Antenna effective area. [m^-2]
+
     From Rinehart (1997), Eqn 4.5
-    
-    INPUT::
-    -----
-    G : float
+
+    Parameters
+    ----------
+    gain : float or array
         Antenna Gain [dB]
     lam : float
         Radar wavelength [m]
-    
-    OUPUT::
-    -----
-    Ae : float
-        Antenna effective area [m^2]
-    
-    USAGE::
-    -----
-    Ae = ant_eff_area(G,lam)
     """
-
     # Convert from dB to linear units
-    Glin = 10**(G / 10.)
+    gainlin = 10**(np.asarray(gain) / 10.)
+    return gainlin * lam**2 / (4 * np.pi)
 
-    Ae = Glin * lam**2 / (4 * np.pi)
 
-    return Ae
-    
-#============
-
-def power_target(Pt, G, Asig, r):
+def power_target(power_t, gain, areat, r):
     """
-    Power intercepted by target.
-    
+    Power [W] intercepted by target.
+
     From Rinehart (1997), Eqn 4.3
-    
-    INPUT::
-    -----
-    Pt : float
+
+    Parameters
+    ----------
+    power_t : float
         Transmitted power [W]
-    G : float
+    gain : float
         Antenna gain [dB]
-    Asig : float
+    areat : float
         Area of target [m^2]
-    r : float
+    r : float or array
         Distance to sample volume from radar [m]
-    
-    OUPUT::
-    -----
-    Psig : float
-        Power intecepted by target [W]
-    
-    USAGE::
-    -----
-    Psig = power_target(Pt,G,At,r)
     """
-
     # Convert from dB to linear units
-    Glin = 10**(G / 10.)
+    gainlin = 10**(gain / 10.)
+    return (power_t * gainlin * areat) / (4 * np.pi * np.asarray(r)**2)
 
-    Psig = (Pt * Glin * Asig) / (4 * np.pi * r**2)
 
-    return Psig
-    
-#==============
-
-def xsec_bscatter_sphere(D, lam, K=0.93):
+def xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     """
-    Backscatter cross-sectional area of a sphere using the Rayleigh approximation.
-    
+    Backscatter cross-sectional area [m^-2] of a sphere using the Rayleigh approximation.
+
     From Rinehart (1997), Eqn 4.9 and 5.7
-    
-    INPUT::
-    -----
-    D : float
+
+    Parameters
+    ----------
+    diam : float or array
         Diamter of target [m]
     lam : float
         Radar wavelength [m]
-    K : float
+    dielectric : float
         Dielectric factor [unitless]
-    
-    OUPUT::
-    -----
-    sig : float
-        Backscattering cross-section [m^2]
-    
-    USAGE::
-    -----
-    sig = xsec_bscatter_sphere(D,lam, [K=0.93])
-    
-    NOTES::
+
+    Notes
     -----
     The Rayleigh approximation is good when the diamter of a spherical particle
-       is much smaller than the wavelength of the radar (D/wavelength= 1/16).  This 
-       condition leads to the relationship that the area is proportional to the 
-       sixth power of the diameter.
+    is much smaller than the wavelength of the radar (D/wavelength= 1/16).  This
+    condition leads to the relationship that the area is proportional to the
+    sixth power of the diameter.
 
-    The default is for a dielectric factor value for water.  This can be 
-       changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
-       diameters or K=0.176 for particle sizes of equivalent ice spheres.
+    The default is for a dielectric factor value for water.  This can be
+    changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
+    diameters or K=0.176 for particle sizes of equivalent ice spheres.
     """
+    return (np.pi**5 * dielectric**2 * np.asarray(diam)**6) / lam**4
 
-    sig = (np.pi**5 * K**2 * D**6) / lam**4
 
-    return sig
-    
-#==============
-
-def norm_xsec_bscatter_sphere(D, lam, K=0.93):
+def norm_xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     """
-    Normalized Backscatter cross-sectional area of a sphere using the Rayleigh approximation.
-    
+    Normalized Backscatter cross-sectional area [m^2] of a sphere using the Rayleigh approximation.
+
     From Rinehart (1997), Eqn 4.9 and 5.7 and Battan Ch. 4.5
-    
-    INPUT::
-    -----
-    D : float
+
+    Parameters
+    ----------
+    diam : float or array
         Diamter of targer [m]
     lam : float
         Radar wavelength [m]
-    K : float
+    dielectric : float
         Dielectric factor [unitless]
-    
-    OUPUT::
-    -----
-    sigNorm : float
-        Normalized backscatter cross-section [unitless]
-    
-    USAGE::
-    -----
-    sigNorm = norm_xsec_bscatter_sphere(D,lam, [K=0.93])
-    
-    NOTES::
+
+    Notes
     -----
     The Rayleigh approximation is good when the diamter of a spherical particle
-       is much smaller than the wavelength of the radar (D/wavelength= 1/16).  This 
-       condition leads to the relationship that the area is proportional to the 
-       sixth power of the diameter.
+    is much smaller than the wavelength of the radar (D/wavelength= 1/16).  This
+    condition leads to the relationship that the area is proportional to the
+    sixth power of the diameter.
 
-    The default is for a dielectric factor value for water.  This can be 
-       changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
-       diameters or K=0.176 for particle sizes of equivalent ice spheres.
+    The default is for a dielectric factor value for water.  This can be
+    changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
+    diameters or K=0.176 for particle sizes of equivalent ice spheres.
     """
 
     # Calculate the cross-sectional backscatter area
-    sig = xsec_bscatter_sphere(D, lam, K)
+    sig = xsec_bscatter_sphere(np.asarray(diam), lam, dielectric)
+    return sig/ (np.pi * (np.asarray(diam)/2.)**2)
 
-    sigNorm = sig/ (np.pi * (D/2.)**2)
-    return sigNorm
-    
-#==================
 
-def size_param(D, lam):
+def size_param(diam, lam):
     """
-    Size parameter calculation.
-    
+    Size parameter calculation. Unitless.
+
     From Rinehart (1997), Eqn 4.9 and 5.7 and Battan Ch. 4.5
-    
-    INPUT::
-    -----
-    D : float
-        Diamter of targer [m]
+
+    Parameters
+    ----------
+    diam : float or float
+        Diamter of target [m]
     lam : float
         Radar wavelength [m]
-    
-    OUPUT::
-    -----
-    alpha : float
-        Size parameter [unitless]
-    
-    USAGE::
-    -----
-    alpha = size_param(D,lam)
-    
-    NOTES::
+
+    Notes
     -----
     The size paramter can be used along with the backscattering cross-section to
-       distinguish ice and water dielectric characteristics.  For example:
-       Alpha < 2 the backscattering cross-section of ice is smaller than water,
-       Alpha > 2 the opposite is true due to the fact that absorption in water
-       exceeds that in ice.
+    distinguish ice and water dielectric characteristics.  For example:
+    Alpha < 2 the backscattering cross-section of ice is smaller than water,
+    Alpha > 2 the opposite is true due to the fact that absorption in water
+    exceeds that in ice.
     """
+    return 2 * np.pi * np.asarray(diam)/2. / lam
 
-    alpha = 2 * np.pi * D/2. / lam
-    return alpha
-    
-#================
 
-def power_return_target(Pt, G, lam, sig, r):
+def power_return_target(power_t, gain, lam, sig, r):
     """
-    Power returned y target located at the center of the antenna beam pattern.
-    
+    Power [W] returned y target located at the center of the antenna beam pattern.
+
     From Rinehart (1997), Eqn 4.7
-    
-    INPUT::
-    -----
-    Pt : float
+
+    Parameters
+    ----------
+    power_t : float
         Transmitted power [W]
-    G : float
+    gain : float
         Antenna gain [dB]
     lam : float
         Radar wavelength [m]
     sig : float
         Backscattering cross-sectional area of target [m^2]
-    r : float
+    r : float or array
         Distance to sample volume from radar [m]
-    
-    OUPUT::
-    -----
-    Pr : float
-        Power returned by target [W]
-    
-    USAGE::
-    -----
-    Pr = power_return_target(Pt,G,lam,sig,r)
     """
-
     # Convert from dB to linear units
-    Glin = 10**(G/10.)
+    gainlin = 10**(gain/10.)
+    return ((power_t * gainlin**2 * lam**2 * sig) /
+            (64 * np.pi**3 * np.asarray(r)**4))
 
-    Pr = (Pt * Glin**2 * lam**2 * sig) / (64 * np.pi**3 * r**4)
 
-    return Pr
-    
-#=============
-
-def thermal_noise(Bn, Units, Ts=290.):
+def thermal_noise(bandwidth, Units, noise_temp=290.):
     """
-    Thermal noise power.
-    
+    Thermal noise power [W or 'dBm'].
+
     From CSU Radar Meteorology notes, AT741
-    
-    INPUT::
-    -----
-    Bn : float
+
+    Parameters
+    ----------
+    bandwidth : float or array
         Receiver bandwidth [Hz]
     Units : float
         String of nits desired, can be 'W' or 'dBm'
     Ts : float
         Reciever noise temperature [K]
-    
-    OUPUT::
-    -----
-    Nt : float
-        Thermal noise power [W or 'dBm']
-    
-    USAGE::
-    -----
-    Nt = thermal_noise(Bn,Units,[Ts])
-    
-    NOTES::
+
+    Notes
     -----
     Reciever noise temp set to conventional 290K by default
     """
-
     # Calculate the noise, convert if requested
-    N = kBoltz * Ts * Bn
-    
-    if Units.upper()=='W':
-        Nt = N
-    elif Units.upper()=='DBM':
-        Nt = 10. * np.log10(N/10**-3)
-    else:
-        print "Units must be in 'W' or 'dBm'"
-        Nt = np.nan
-    return Nt
-    
-#=============
+    noise = kBoltz * noise_temp * np.asarray(bandwidth)
 
+    if Units.upper()=='W':
+        noiset = noise
+    elif Units.upper()=='DBM':
+        noiset = 10. * np.log10(noise/10**-3)
+    else:
+        print("Units must be in 'W' or 'dBm'")
+        noiset = np.nan
+    return noiset

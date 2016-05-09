@@ -1,4 +1,4 @@
-"""PyRadarMet: Python Fundamental Calculations in Radar Meteorology 
+"""PyRadarMet: Python Fundamental Calculations in Radar Meteorology
 
 PyRadarMet is a toolkit that contains a variety of utilities that can be used
  to calculate fundamental radar meteorology values:
@@ -22,10 +22,10 @@ import tarfile
 import time
 from setuptools import setup
 
-#- Pull the header into a variable 
+#- Pull the header into a variable
 doclines = __doc__.split("\n")
 
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 #- Set variables for setup
 PACKNAME = 'pyradarmet'
@@ -105,7 +105,7 @@ for filename in names:
     exfile = os.path.join(datafolder,exfilebase)
     if not os.path.exists(exfile):
       print("extracting: {0} from {1}".format(exfilebase, archfilebase))
-      tar = tarfile.open(archfile)  
+      tar = tarfile.open(archfile)
       tarobj = tar.extractfile(exfilebase.upper())
       localfile = open(exfile, "wb")
       shutil.copyfileobj(tarobj, localfile)
@@ -187,7 +187,7 @@ else:
 	* Calculate ZDR bias of radar system""",
 		  install_requires = ['Numpy >=1.7.2'],
 		  )
-		  
+
 
 install_time = time.time() - start_time
 print "Total install time: %g seconds"%(install_time)

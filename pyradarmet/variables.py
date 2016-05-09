@@ -1,329 +1,236 @@
+# -*- coding: utf-8 -*-
 """
 pyradarmet.variables
-=========================
+====================
 
-A grouping of functions that calculate a number of radar-derived variables.
+Functions to calculate radar-derived variables.
 
-Author:
-Nick Guy  NOAA/NSSL, NRC (nick.guy@noaa.gov)
-
-5 Feb 2014 - Created
-
+References
+----------
+Rinehart (1997), Radar for Meteorologists.
+Aydin et al. (1986; JCAM), Remote Sensing of Hail with Dual Linear
+Polarization Radar
 """
-# NOTES::
-#   Arrays seem to be able to be passed, but make sure they are float arrays
-#    (e.g. created with numpy) and not lists
-#
-# FUNCTIONS::
-# reflectivity - Radar reflectivity
-# dop_vel - Doppler velocity
-# CDR - Circular depolarization ratio
-# LDR - Linear depolarization ratio
-# ZDR - Differential reflectivity
-# ZDP - Reflectivity difference
-#-------------------------------------------------------------------
-# Load the needed packages
 import numpy as np
-#===============================================================
-# DEFINE CONTSTANTS
-#===============================================================
-#
-#===============================================================
-# BEGIN FUNCTIONS
-#===============================================================
-def reflectivity(Pt, G, Tau, lam, bwH, bwV, Lm, Lr, Pr, r, K=0.93):
+
+
+def reflectivity(power_t, gain, pulse_width, wavelength, bw_h, bw_v,
+                 aloss, rloss, power_return, r, dielectric=0.93):
     """
-    Radar reflectivity.
-    
+    Radar reflectivity [mm^6/m^3].
+
     From Rinehart (1993), Eqn 5.17 (See Eqn 5.14-5.16 also)
-    
-    INPUT::
-    -----
-    Pt : float
+
+    Parameters
+    ----------
+    power_t : float
         Transmitted power [W]
-    G : float
+    gain : float
         Antenna Gain [dB]
-    Tau : float
+    pulse_width : float
         Pulse Width [s]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     bwidth : float
         Antenna beamwidth [degrees]
-    Lm : float
+    aloss : float
         Antenna/waveguide/coupler loss [dB]
-    Lr : float
+    rloss : float
         Receiver loss [dB]
-    K : float
+    dielectric : float
         Dielectric factor [unitless]
-    Pr : float
+    power_return : float
         Returned power [W]
-    r : float
+    r : float or array
         Range to target [m]
-    
-    OUTPUT::
-    -----
-    Ze : float
-        Radar reflectivity [mm^6/m^3]
-    
-    USAGE::
-    -----
-    Ze = reflectivity(Pt,G,Tau,lam,bwH,bwV,Lm,Lr,Pr,r,[K=.93])
-    
-    NOTES::
+
+    Notes
     -----
     This routine calls the radar_constant function.
-    The default is for a dielectric factor value for water.  This can be 
+    The default is for a dielectric factor value for water.  This can be
         changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
         diameters or K=0.176 for particle sizes of equivalent ice spheres.
     """
-
     # Call the radar constant function
-    C1 = radar_constant(Pt, G, Tau, lam, bwH, bwV, Lm, Lr)
+    C1 = radar_constant(power_t, gain, pulse_width, wavelength, bw_h, bw_v, aloss, rloss)
+    return power_return * np.asarray(r)**2 / (C1 * dielectric**2)
 
-    # 
-    Ze = Pr * r**2 / (C1 * K**2)
 
-    return Ze
-    
-#============
-
-def rad_vel(f,lam):
+def radial_velocity(frequency, wavelength):
     """
-    Radial velocity.
-    
-    From Rinehart (1993), Eqn 6.6
-    
-    INPUT::
-    -----
-    f : float
+    Radial velocity [m/s].
+
+    From Rinehart (1997), Eqn 6.6
+
+    Parameters
+    ----------
+    frequency : float or array
         Frequency shift [Hz]
-    lam : float
+    wavelength : float or array
         Radar wavelength [m]
-    
-    OUTPUT::
+
+    Notes
     -----
-    Vr : float
-        Radial velocity [m/s]
-    
-    USAGE::
-    -----
-    Vr = rad_vel(f,lam)
+    If arrays are used, either for one okay, or both must be the same length.
     """
+    return np.asarray(frequency) * np.asarray(wavelength) / 2.
 
-    Vr = f * lam / 2.
 
-    return Vr
-    
-#=============
-
-def CDR(Zpar, Zorth):
+def cdr(refl_parallel, refl_orthogonal):
     """
-    Circular depolarization ratio.  
-    
+    Circular depolarization ratio [dB].
+
     From Rinehart (1997), Eqn 10.2
-    
-    INPUT::
-    -----
-    Zpar : float
+
+    Parameters
+    ----------
+    refl_parallel : float or array
         Reflectivity in the parallel channel [mm^6/m^3]
-    Zorth : float
+    refl_orthogonal : float or array
         Reflectivity in the orthogonal channel [mm^6/m^3]
-    
-    OUTPUT::
-    -----
-    CDR : float
-        Circular depolarization ratio [dB]
-    
-    USAGE::
-    -----
-    CDR = CDR(Zpar,Zorth)
-    
-    NOTES::
+
+    Notes
     -----
     Ensure that both powers have the same units!
 
     Radars that transmit right-hand circular polarization and receive and
        receive both left- and right-hand circular polarization (using two
-       antennas) and acquiring the same pulse.  
-    The parallel (orthogonal) component refers to the same 
+       antennas) and acquiring the same pulse.
+    The parallel (orthogonal) component refers to the same
       (opposite) polarization as transmitted. Non-spericity of hydrometeors
       may be detected (inf long, thin scatterers have CDR = 0 dB, while perfect
      spheres have CDR = -infinity
 
-    Can also use power measurements instead of reflectivity
+    Can also use power measurements instead of reflectivity.
+
+    If arrays are used, either for one okay, or both must be the same length.
     """
+    return 10. * np.log10(np.asarray(refl_parallel)/np.asarray(refl_orthogonal))
 
-    CDR = 10.* np.log10(Zpar/Zorth)
 
-    return CDR
-    
-#===============
-
-def LDR(Zh, Zv):
+def ldr(z_h, z_v):
     """
-    Linear depolarization ratio.
-    
+    Linear depolarization ratio [dB].
+
     From Rinehart (1997), Eqn 10.3
-    
-    INPUT::
-    -----
-    Zh : float
+
+    Parameters
+    ----------
+    z_h : float or array
         Horizontal reflectivity [mm^6/m^3]
-    Zv : float
+    z_v : float or array
         Vertical reflectivity [mm^6/m^3]
-    
-    OUTPUT::
-    -----
-    LDR : float
-        Linear depolarization ratio [dB]
-    
-    USAGE::
-    -----
-    LDR = LDR(Zh,Zv)
-    
-    NOTES::
+
+    Notes
     -----
     Ensure that both powers have the same units!
 
     Uses both polarizations in a dual-pol radar from a single pulse.
-    
+
     Perfect spheres yield LDR => -infinity (though antenna limitations limit
-        LDR values to -40 dB for small spheres.
+    LDR values to -40 dB for small spheres.
     Long, thin targets, LDR => 0
-    
+
     Typical values in the range -15 > LDR > -35 dB
+
+    If arrays are used, either for one okay, or both must be the same length.
     """
+    return 10. * np.log10(np.asarray(z_h) / np.asarray(z_v))
 
-    LDR = 10. * np.log10(Zh / Zv)
 
-    return LDR
-    
-#==============
-
-def ZDR(Zh, Zv):
+def zdr(z_h, z_v):
     """
-    Differential reflectivity.
-    
+    Differential reflectivity [dB].
+
     From Rinehart (1997), Eqn 10.3 and Seliga and Bringi (1976)
-    
-    INPUT::
-    -----
-    Zh : float
+
+    Parameters
+    ----------
+    z_h : float or array
         Horizontal reflectivity [mm^6/m^3]
-    Zv : float
+    z_v : float or array
         Vertical reflectivity [mm^6/m^3]
-    
-    OUTPUT::
+
+    Notes
     -----
-    ZDR : float
-        Differential reflectivity [dB]
-    
-    USAGE::
+    Ensure that both powers have the same units!
+
+    Alternating horizontally and linearly polarized pulses are averaged.
+
+    Notes
     -----
-    ZDR = ZDR(Zh,Zv)
-    
-    NOTES::
+    If arrays are used, either for one okay, or both must be the same length.
+    """
+    return 10. * np.log10(np.asarray(z_h) / np.asarray(z_v))
+
+
+def zdp(z_h, z_v):
+    """
+    Reflectivity difference [dB].
+
+    From Rinehart (1997), Eqn 10.3
+
+    Parameters
+    ----------
+    z_h : float
+        Horizontal reflectivity [mm^6/m^3]
+    z_v : float
+        Horizontal reflectivity [mm^6/m^3]
+
+    Notes
     -----
     Ensure that both powers have the same units!
 
     Alternating horizontally and linearly polarized pulses are averaged.
     """
 
-    ZDR = 10. * np.log10(Zh / Zv)
-
-    return ZDR
-    
-#==============
-
-def ZDP(Zh, Zv):
-    """
-    Reflectivity difference.
-    
-    From Rinehart (1997), Eqn 10.3
-    
-    INPUT::
-    -----
-    Zh : float
-        Horizontal reflectivity [mm^6/m^3]
-    Zv : float
-        Vertical reflectivity [mm^6/m^3]
-    
-    OUTPUT::
-    -----
-    ZDP : float
-        Reflectivity difference [dB]
-    
-    USAGE::
-    -----
-    ZDP = ZDP(Zh,Zv)
-    
-    NOTES::
-    -----
-    Ensure that both powers have the same units!
-
-    Alternating horizontally and linearly polarized pulses are averaged. 
-    """
-
-    if Zh > Zv:
-        ZDP = 10.* np.log10(Zh - Zv)
+    if z_h > z_v:
+        return 10.* np.log10(z_h - z_v)
     else:
-        print "Zh < Zv !"
-        ZDP = np.nan
-    return ZDP
-    
-#==============
+        print("Horizontal reflectivity < Horizontal reflectivity !")
+        return np.nan
 
-def HDR(dBZh, ZDR):
+
+def hdr(dbz_h, zdr):
     """
-    Differential reflectivity hail signature.
-    
+    Differential reflectivity [dB] hail signature.
+
     From Aydin et al. (1986), Eqns 4-5
-    
-    INPUT::
-    -----
-    Zh : float
+
+    Parameters
+    ----------
+    dbz_h : float or array
         Horizontal reflectivity [dBZ]
-    ZDR : float
+    zdr : float or array
         Differential reflectivity [dBZ]
-    
-    OUTPUT::
-    -----
-    ZDP : float
-        Reflectivity difference [dB]
-    
-    USAGE::
-    -----
-    HDR = HDR(dBZh,ZDR)
-    
-    NOTES::
+
+    Notes
     -----
     Ensure that both powers have the same units!
 
     Positive HDR and strong gradients at edges signify ice. The larger HDR,
        the greater likelihood that ice is present.
 
-    Considerations for this equation (see paper for more details): 
+    Considerations for this equation (see paper for more details):
        1) Standar error of disdrometer data allowed for
        2) Drop oscillation accounted for based on 50% model of Seliga et al (1984)
        3) Lower (27) bound chose to provide constant Zh ref level
        4) Upper cutoff of 60 (may be too low)
 
-    Picca and Ryzhkof (2012) mention that this does not take into account 
-       the hail melting process.  So use at your own risk!
+    Picca and Ryzhkof (2012) mention that this does not take into account
+    the hail melting process.  So use at your own risk!
     """
-
-    # Set the f(Zdr) based upon observations
-    if ZDR <= 0:
+    # Set the f(zdr) based upon observations
+    f = np.empty_like(np.atleast_1d(zdr))
+##    f[zdr <= 0] = 27.
+##    f[np.where((zdr > 0) & (zdr <= 1.74))] = 19. * zdr[np.where((zdr > 0) & (zdr <= 1.74))] + 27.
+##    f[np.where(zdr > 1.74)] = 60.
+    if zdr <= 0:
         f = 27.
-    elif ZDR > 0 and ZDR <= 1.74:
-        f = 19. * ZDR + 27.
-    elif ZDR > 1.74:
+    elif zdr > 0 and zdr <= 1.74:
+        f = 19. * zdr + 27.
+    else zdr > 1.74:
         f = 60.
 
     # Calculate HDR
-    HDR = dBZh - f
-
-    return HDR
-    
-#==============
-
+    return np.asarray(dbz_h) - f

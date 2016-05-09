@@ -1,4 +1,3 @@
-#=============================
 """
 PyRadarMet - Python Package that contains a variety of functions for radar meteorology
 ==================================

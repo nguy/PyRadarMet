@@ -1,306 +1,207 @@
+# -*- coding: utf-8 -*-
 """
 pyradarmet.geometry
-=========================
+===================
 
-A grouping of functions that calculate a number of radar geometry characteristics.
+Functions to calculate radar geometry characteristics.
 
-Author:
-Nick Guy  NOAA/NSSL, NRC (nick.guy@noaa.gov)
-
-3 Feb 2014 - Created
-
+References
+----------
+Rinehart (1997), Radar for Meteorologists.
+Battan (1973), Radar Observations of the Atmosphere.
+Bech et al. (2003; JAOT), The Sensitivity of Single Polarization Weather Radar
+Beam Blockage Correction to Variability in the Vertical Refractivity Gradient.
 """
-# NOTES::
-#   Arrays seem to be able to be passed, but make sure they are float arrays
-#    (e.g. created with numpy) and not lists
-#
-# FUNCTIONS::
-# r_effective - Effective radius
-# half_power_radius - Half-power beam radius
-# ray_height - Height of a ray
-# sample_vol_ideal - Ideal Sample volume
-# sample_vol_gauss - Sample volume from Gaussian-distributed beam
-# range_correct - Range distance corrected for elevation angle "loss" along ground
-# beam_block_frac - Partial Beam blockage fraction 
-#-------------------------------------------------------------------
-# Load the needed packages
 import numpy as np
 
-###################
-# DEFINE CONTSTANTS
-###################
-SLP = 1013.25 # Sea-level Pressure [hPa]
-P0 = 1000.  # Reference pressure [hPa]
-c = 3e8 # Speed of light [m/s]
-Re = 6371000 # Earth's average radius [m] assuming sphericity 
-R43 = Re*4./3. # 4/3 Approximation effective radius for standard atmosphere [m]
-kBoltz = 1.381e-23 # Boltzmann's constant [ m^2 kg s^-2 K^-1]
+
+earth_radius = 6371000 # Earth's average radius [m] assuming sphericity
+r43 = earth_radius * 4./3. # 4/3 Approximation effective radius for standard atmosphere [m]
 
 # Earth radius taken according to International Union of Geodesy and Geophysics
-###################
-# BEGIN FUNCTIONS
-###################
 
-def r_effective(dNdH=-39e-6):
+def r_effective(dndh=-39e-6):
     """
-    Effective radius calculation.
-    
+    Effective radius [m] calculation.
+
     Rinehart (1997), Eqn 3.9, solved for R'
-    
-    INPUT::
-    -----
-    dNdH : float
+
+    Parameters
+    ----------
+    dndh : float
         Refraction [N x10^-6/km]
-    
-    OUTPUT::
-    -----
-    R1 : float
-        Effective radius [m]
-    
-    USAGE::
-    -----
-    R1 = r_effective([dNdH=-39.])
-    
-    NOTES::
+
+    Notes
     -----
     Effective radius of earth given a refraction.  If no refraction is given
        a "standard atmosphere" is assumed, the valued needed to have straight
        radar rays.
     """
-
     # Convert earth's radius to km for common dN/dH values and then
     # multiply by 1000 to return radius in meters
-    R1 = (1. / ((1/(Re/1000.)) + (dNdH))) * 1000.
+    return (1. / ((1/(earth_radius/1000.)) + (dndh))) * 1000.
 
-    return R1
-    
-#=============
 
 def half_power_radius(r, bwhalf):
     """
-    Half-power radius.
-    
-    Battan (1973), 
-    
-    INPUT::
-    -----
-    r : float
+    Half-power radius [m].
+
+    Battan (1973),
+
+    Parameters
+    ----------
+    r : float or array
         Range [m]
     bwhalf : float
         Half-power beam width [degrees]
-    
-    OUTPUT::
-    -----
-    Rhalf : float
-        Half-power radius [m]
-    
-    USAGE::
-    -----
-    Rhalf = half_power_radius(r,bwhalf)
     """
-
     # Convert earth's radius to km for common dN/dH values and then
     # multiply by 1000 to return radius in meters
-    Rhalf = (r * np.deg2rad(bwhalf)) / 2.
+    return (np.asarray(r) * np.deg2rad(bwhalf)) / 2.
 
-    return Rhalf
-    
-#===============
 
-def ray_height(r, elev, H0, R1=R43):
+def ray_height(r, elev, h0, reff=r43):
     """
-    Center of radar beam height calculation.
-    
+    Center of radar beam height [m] calculation.
+
     Rinehart (1997), Eqn 3.12, Bech et al. (2003) Eqn 3
-    
-    INPUT::
-    -----
-    r : float
+
+    Parameters
+    ----------
+    r : float or array
         Range from radar to point of interest [m]
     elev : float
         Elevation angle of radar beam [deg]
-    H0 : float
+    h0 : float
         Height of radar antenna [m]
-    R1 : float
+    reff : float
         Effective radius
-    
-    OUTPUT::
-    -----
-    H : float
-        Radar beam height [m]
-    
-    USAGE::
-    -----
-    H = ray_height(r,elev,H0,[R1=6374000.*4/3])
-    
-    NOTES::
-    -----
-    If no Effective radius is given a "standard atmosphere" is assumed, 
-       the 4/3 approximation.
-    Bech et al. (2003) use a factor ke that is the ratio of earth's radius
-       to the effective radius (see r_effective function) and Eqn 4 in B03
-    """
 
+    Notes
+    -----
+    If no Effective radius is given a "standard atmosphere" is assumed,
+    the 4/3 approximation.
+
+    Bech et al. (2003) use a factor ke that is the ratio of earth's radius
+    to the effective radius (see r_effective function) and Eqn 4 in B03
+    """
     # Convert earth's radius to km for common dN/dH values and then
     # multiply by 1000 to return radius in meters
-    Term1 = np.sqrt(r**2 +R1**2 + 2*r*R1*np.sin(np.deg2rad(elev)))
-    H = Term1 - R1 + H0
+    term1 = (np.sqrt(np.asarray(r)**2 +reff**2 +
+             2 * np.asarray(r) * reff * np.sin(np.deg2rad(elev))))
+    h = term1 - reff + h0
+    return h
 
-    return H
-    
-#============
 
-def sample_vol_ideal(r, bwH, bwV, pLength):
+def sample_vol_ideal(r, bw_h, bw_v, pulse_length):
     """
-    Sample volume (idealized) assuming all power in half-power beamwidths.
-    
+    Idealized Sample volume [m^3] assuming all power in half-power beamwidths.
+
     From Rinehart (1997), Eqn 5.2
-    
-    INPUT::
-    -----
-    r : float
+
+    Parameters
+    ----------
+    r : float or array
         Distance to sample volume from radar [m]
-    bwH : float
+    bw_h : float
         Horizontal beamwidth [deg]
-    bwV : float
+    bw_v : float
         Vertical beamwidth deg]
-    pLength : float
+    pulse_length : float
         Pulse length [m]
-    
-    OUTPUT::
-    -----
-    SVol : float
-        Sample Volume [m^3]
-    
-    USAGE::
-    -----
-    SVol = sample_vol_ideal(r,bwH,bwV,pLength)
-    
-    NOTES::
+
+    Notes
     -----
     This form assumes all transmitted energy is in the half-power beamwidths.
-     A more realistic solution is found in the sample_vol_gauss function
+    A more realistic solution is found in the sample_vol_gauss function
     """
+    return (np.pi * (np.asarray(r) * np.deg2rad(bw_h)/2.) * (np.asarray(r) *
+            np.deg2rad(bw_v)/2.) * (pulse_length/2.))
 
-    SVol = np.pi * (r * np.deg2rad(bwH)/2.) * (r * np.deg2rad(bwV)/2.) * (pLength/2.)
-    return SVol
-    
-#===============
 
-def sample_vol_gauss(r, bwH, bwV, pLength):
+def sample_vol_gauss(r, bw_h, bw_v, pulse_length):
     """
-    Sample volume assuming transmitted energy in Gaussian beam shape.
-    
+    Sample volume [m^3] assuming transmitted energy in Gaussian beam shape.
+
     From Rinehart (1997), Eqn 5.4
-    
-    INPUT::
-    -----
-    r  : float
-        Distance to sample volume from radar [m]
-    bwH : float
-        Horizontal beamwidth [deg]
-    bwV : float
-        Vertical beamwidth deg]
-    pLength : float
-        Pulse length [m]
-    
-    OUTPUT::
-    -----
-    SVol : float
-        Sample Volume [m]
-    
-    USAGE::
-    -----
-    SVol = sample_vol_gauss(r,bwH,bwV,pLength)
-    
-    NOTES::
-    -----
-    This form assumes a Gaussian beam shape for transmitted energy and is more 
-      realistic than the sample_vol_ideal.  Derived by Probert-Jones (1962).
-    """
 
-    Numer = np.pi * r**2 * np.deg2rad(bwH) * np.deg2rad(bwV) * pLength
+    Parameters
+    ----------
+    r  : float or array
+        Distance to sample volume from radar [m]
+    bw_h : float
+        Horizontal beamwidth [deg]
+    bw_v : float
+        Vertical beamwidth deg]
+    pulse_length : float
+        Pulse length [m]
+
+    Notes
+    -----
+    This form assumes a Gaussian beam shape for transmitted energy and is more
+    realistic than the sample_vol_ideal.  Derived by Probert-Jones (1962).
+    """
+    Numer = np.pi * np.asarray(r)**2 * np.deg2rad(bw_h) * np.deg2rad(bw_v) * pulse_length
     Denom = 16. * np.log(2)
-    
+
     SVol = Numer / Denom
     return SVol
-    
-#===============
 
-def range_correct(r, h, E):
+
+def range_correct(r, h, elev):
     """
-    A corrected range from radar that takes into account the "loss" of 
-      ground distance because of the radar elevation angle.  This is a 
-      cumulative effect at each gate along the ray.
+    A corrected range [m] from radar that takes into account the "loss" of
+    ground distance because of the radar elevation angle.  This is a
+    cumulative effect at each gate along the ray.
 
     From CSU Radar Meteorology AT 741 Notes
-    
-    INPUT::
-    -----
-    r  : float
+
+    Parameters
+    ----------
+    r  : float or array
         Distance to sample volume from radar [m]
     h : float
         Height of the center of radar volume [m]
-    E : float
+    elev : float
         Elevation angle [deg]
-    
-    OUTPUT::
+
+    Notes
     -----
-    rnew : float
-        Adjusted range to sample volume [m]
-    
-    USAGE::
-    -----
-  rnew = range_correct(r,h,E)
-    
-    NOTES::
-    -----
-    This function requires that an array be passed!  If you need just one 
+    This function requires that an array be passed!  If you need just one
        point create a 2 element array with a begin point.
-    This is now set up to only accept a 1D array I believe.  May need to 
+    This is now set up to only accept a 1D array I believe.  May need to
        fix this in the future.
     """
-
     # Calculate the change in height along the ray
     dh1 = h[1:] - h[:-1]
     # Add the 0th place in the ray at the beginning
-    dh2 = np.insert(dh1,0,h[0])
+    dh2 = np.insert(dh1, 0, h[0])
 
     # Calculate the change in distance at each gate
     a90r = np.pi/2.  # 90 degrees in radians
-    dr = dh2 / (np.tan(a90r - np.deg2rad(E)))
+    dr = dh2 / (np.tan(a90r - np.deg2rad(elev)))
 
     # Now calculate the corrected range at each gate
-    rnew = r - np.cumsum(dr)
-
+    rnew = np.asarray(r) - np.cumsum(dr)
     return rnew
-    
+
 #===============
 
 def beam_block_frac(Th, Bh, a):
-    """Partial beam blockage fraction.
-    
+    """Partial beam blockage fraction. Unitless.
+
     From Bech et al. (2003), Eqn 2 and Appendix
-    
-    INPUT::
-    -----
+
+    Parameters
+    ----------
     Th : float
         Terrain height [m]
     Bh : float
         Beam height [m]
     a : float
         Half power beam radius [m]
-    
-    OUTPUT::
-    -----
-    PBB : float
-        Partial beam blockage fraction [unitless]
-    
-    USAGE::
-    -----
-    PBB = beam_block_frac(Th,Bh,a)
-    
-    NOTES::
+
+    Notes
     -----
     This procedure uses a simplified interception function where no vertical
       gradient of refractivity is considered.  Other algorithms treat this
@@ -319,10 +220,7 @@ def beam_block_frac(Th, Bh, a):
     Numer = (y * np.sqrt(a**2 - y**2)) + (a**2 * np.arcsin(y/a)) + (np.pi * a**2 /2.)
 
     Denom = np.pi * a**2
-    
+
     PBB = Numer / Denom
 
     return PBB
-    
-#==============
-

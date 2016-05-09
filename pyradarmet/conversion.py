@@ -1,226 +1,104 @@
+# -*- coding: utf-8 -*-
 """
 pyradarmet.conversion
-=========================
+=====================
 
-A grouping of functions that converts common radar units.
-
-Author:
-Nick Guy  NOAA/NSSL, NRC (nick.guy@noaa.gov)
-
-3 Feb 2014 - Created
-
+Functions for converting common radar units.
 """
-# NOTES::
-#   Arrays seem to be able to be passed, but make sure they are float arrays
-#    (e.g. created with numpy) and not lists
-#
-# FUNCTIONS::
-# dBZ2Z - Convert from dBZ to linear Z units
-# Z2dBZ - Convert from linear Z units to dBZ
-# si2kmh - Convert from SI wind units to km/hr
-# si2mph - Convert from SI wind units to miles per hour
-# si2kts - Convert from SI wind units to knots
-#-------------------------------------------------------------------
-# Load the needed packages
 import numpy as np
-###################
-# DEFINE CONTSTANTS
-###################
 
-###################
-# BEGIN FUNCTIONS
-###################
 
 def dBZ2Z(dBZ):
-    """Conversion from dBZ (log) units to linear Z units
-    
-    INPUT::
-    -----
-    dBZ : float
-        logarithmic reflectivity value
- 
-    OUTPUT::
-    ------
-    Zlin : float
-        linear reflectivity units
-    
-    USAGE::
-    -----
-    Zlin = dBZ2Z(dBZ)
     """
+    Convert from log [dBZ] to linear Z [mm^6 m^−3] units.
 
-    Zlin = 10.**(dBZ/10.)
+    Parameters
+    ----------
+    dBZ : float or array
+        logarithmic reflectivity value
+    """
+    return 10.**(np.asarray(dBZ)/10.)
 
-    return Zlin
-    
-#============
 
 def Z2dBZ(Zlin):
-    """Conversion from linear Z units to dBZ (log) units
-    
-    INPUT::
-    -----
-    Zlin : float
-        linear reflectivity units
- 
-    OUTPUT::
-    ------
-    dBZ : float
-        logarithmic reflectivity value
-    
-    USAGE::
-    -----
-    dBZ = Z2dBZ(Zlin)
     """
+    Convert from linear Z [mm^6 m^−3] to log [dBZ] units.
 
-    dBZ = 10. * np.log10(Zlin)
+    Parameters
+    ----------
+    Zlin : float or array
+        linear reflectivity units
+    """
+    return 10. * np.log10(np.asarray(Zlin))
 
-    return dBZ
-    
-#=============
 
 def si2kmh(SI):
-    """Conversion from SI wind units to km/hr
-    
-    INPUT::
-    -----
-    SI : float
-        Wind in SI units (m/s)
- 
-    OUTPUT::
-    ------
-    kmh: float
-        Wind in km/hr
-    
-    USAGE::
-    -----
-    Ukmh = si2kmh(Usi)
     """
+    Convert from SI [m/s] wind units to km/h.
 
-    kmh = SI * 3600. / 1000.
-    
-    return kmh
-    
-#=============
+    Parameters
+    ----------
+    SI : float or array
+        Wind in SI units (m/s)
+    """
+    return np.asarray(SI) * 3600. / 1000.
+
 
 def si2mph(SI):
-    """Conversion from SI wind units to miles/hr
-    
-    INPUT::
-    -----
-    SI: float
-        Wind in SI units (m/s)
- 
-    OUTPUT::
-    ------
-    mph: float
-        Wind in miles per hour
-    
-    USAGE::
-    -----
-    Umph = si2mph(Usi)
     """
+    Convert from SI wind units to miles/h [mph].
 
-    mph = SI * 0.62137 / 1000. * 3600.
-    
-    return mph
-    
-#=============
+    Parameters
+    ----------
+    SI: float or array
+        Wind in SI units (m/s)
+    """
+    return np.asarray(SI) * 0.62137 / 1000. * 3600.
+
 
 def si2kts(SI):
-    """Conversion from SI wind units to knots
-    
-    INPUT::
-    -----
-    SI: float
-        Wind in SI units (m/s)
- 
-    OUTPUT::
-    ------
-    kts: float
-        Wind in knots
-    
-    USAGE::
-    -----
-    Ukts = si2kts(Usi)
     """
+    Convert from SI wind units to knots [kt].
 
-    kts = SI * 0.51
-    
-    return kts
-    
-#=============
+    Parameters
+    ----------
+    SI: float or array
+        Wind in SI units (m/s)
+    """
+    return np.asarray(SI) * 0.51
+
 
 def kmh2si(kmh):
-    """Conversion from km/hr to SI wind units
-    
-    INPUT::
-    -----
-    kmh: float
-        Wind in km/hr
- 
-    OUTPUT::
-    ------
-    SI: float
-        Wind in SI units (m/s)
-    
-    USAGE::
-    -----
-    Ukmh = si2mph(Usi)
     """
+    Convert from km/h to SI wind units [m/s].
 
-    SI = kmh * 1000. / 3600.
-    
-    return SI
-    
-#============
+    Parameters
+    ----------
+    kmh: float or array
+        Wind in km/hr
+    """
+    return np.asarray(kmh) * 1000. / 3600.
+
 
 def mph2si(mph):
-    """Conversion from miles/hr to SI wind units 
-    
-    INPUT::
-    -----
-    mph: float
-        Wind in miles per hour
- 
-    OUTPUT::
-    ------
-    SI: float
-        Wind in SI units (m/s)
-    
-    USAGE::
-    -----
-    Umph = mph2si(Usi)
     """
+    Convert from miles/h to SI wind units [m/s].
 
-    SI = mph * 1000. / (0.62137 * 3600.)
-    
-    return SI
-    
-#============
+    Parameters
+    ----------
+    mph: float or array
+        Wind in miles per hour
+    """
+    return np.asarray(mph) * 1000. / (0.62137 * 3600.)
+
 
 def kts2si(kts):
-    """Conversion from knots to SI wind units
-    
-    INPUT::
-    -----
-    kts: float
-        Wind in knots
- 
-    OUTPUT::
-    ------
-    SI: float
-        Wind in SI units (m/s)
-    
-    USAGE::
-    -----
-    Ukts = si2mph(Usi)
     """
+    Convert from knots to SI wind units [m/s].
 
-    SI = kts / 0.51
-    
-    return SI
-    
-#============
-
-
+    Parameters
+    ----------
+    kts: float or array
+        Wind in knots
+    """
+    return np.asarray(kts) / 0.51

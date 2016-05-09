@@ -1,328 +1,183 @@
+# -*- coding: utf-8 -*-
 """
 pyradarmet.doppler
-=========================
+==================
 
-A grouping of functions that calculate a number of radar characteristics for Doppler radar.
+Functions to calculate radar characteristics for Doppler radar.
 
-Author:
-Nick Guy  NOAA/NSSL, NRC (nick.guy@noaa.gov)
-
-3 Feb 2014 - Created
-
+References
+----------
+Rinehart (1997), Radar for Meteorologists.
+Jorgensen (1983; JCAM), Feasibility Test of an Airborne Pulse-Doppler
+Meteorological Radar.
 """
-# NOTES::
-#   Arrays seem to be able to be passed, but make sure they are float arrays
-#    (e.g. created with numpy) and not lists
-#
-# FUNCTIONS::
-# freq - Frequency
-# wavelength - Wavelength
-# pulse_length - Pulse Length
-# pulse_duration - Pulse Duration
-# fmax - Maximum frequency
-# Vmax - Nyquist or maximum unambiguous velocity
-# Rmax - Maximum unambiguous range
-# Dop_dilemma - The "Doppler dilemma" either Nyq vel or Rmax yields the other
-# Vshift - Shift in Doppler velocity due to moving platform
-# Vmax_dual - Maximum unambiguous velocity from dual PRF system
-#-------------------------------------------------------------------
-# Load the needed packages
 import numpy as np
-###################
-# DEFINE CONTSTANTS
-###################
-SLP = 1013.25 # Sea-level Pressure [hPa]
-P0 = 1000.  # Reference pressure [hPa]
-c = 3e8 # Speed of light [m/s]
-Re = 6374000 # Earth's radius [m]
-R43 = Re*4./3. # 4/3 Approximation effective radius for standard atmosphere [m]
-kBoltz = 1.381e-23 # Boltzmann's constant [ m^2 kg s^-2 K^-1]
 
-###################
-# BEGIN FUNCTIONS
-###################
+
+speed_of_light = 3e8 # Speed of light [m/s]
+
 def freq(lam):
-    """Frequency given wavelength.
-    
-    INPUT::
-    -----
-    lam : float
-        Wavelength [m]
- 
-    OUTPUT::
-    ------
-    freq : float
-        Frequency [Hz]
-    
-    USAGE::
-    -----
-    freq = freq(lam)
-    """
-    
-    freq = c / lam
+    """Frequency [Hz] given wavelength.
 
-    return freq
-    
-#==============
+    Parameters
+    ----------
+    lam : float or array
+        Wavelength [m]
+    """
+    return speed_of_light / np.asarray(lam)
+
 
 def wavelength(freq):
-    """Wavelength given frequency.
-    
-    INPUT::
-    -----
-    freq : float
+    """Wavelength [m] given frequency.
+
+    Parameters
+    ----------
+    freq : float or array
         Frequency [Hz]
- 
-    OUTPUT::
-    ------
-    lam : float
-        Wavelength [m]
-    
-    USAGE::
-    -----
-    lam = wavelength(freq)
     """
+    return speed_of_light / np.asarray(freq)
 
-    lam = c / freq
-
-    return lam
-    
-#==============
 
 def pulse_duration(tau):
-    """Pulse duration from pulse length.
-    
-    INPUT::
-    -----
-    tau : float
+    """Pulse duration [s] from pulse length.
+
+    Parameters
+    ----------
+    tau : float or array
         Pulse length [m]
- 
-    OUTPUT::
-    ------
-    pDur : float
-        Pulse duration [s]
-    
-    USAGE::
-    -----
-    pDur = pulse_duration(tau)
     """
+    return 2 * np.asarray(tau) / speed_of_light
 
-    pDur = 2 * tau / c
 
-    return pDur
-    
-#===============
+def pulse_length(pdur):
+    """Pulse length [m] from pulse duration.
 
-def pulse_length(pDur):
-    """Pulse length from pulse duration.
-    
-    INPUT::
-    -----
-    pDur : float
+    Parameters
+    ----------
+    pDur : float or array
         Pulse duration [s]
- 
-    OUTPUT::
-    ------
-    tau : float
-        Pulse length [m]
-    
-    USAGE::
-    -----
-    tau = pulse_length(pDur)
     """
+    return speed_of_light * np.asarray(pdur) / 2
 
-    tau = c * pDur / 2
 
-    return tau
-    
-#=============
+def fmax(prf):
+    """Maximum frequency [Hz] given PRF.
 
-def fmax(PRF):
-    """Maximum frequency given PRF.
-    
     From Rinehart (1997), Eqn 6.8
-    
-    INPUT::
-    -----
-    PRF : float
+
+    Parameters
+    ----------
+    PRF : float or array
         Pulse repetition frequency [Hz]
- 
-    OUTPUT::
-    ------
-    fmax : float
-        Maximum frequency [Hz]
-    
-    USAGE::
-    -----
-    fmax = fmax(PRF)
     """
+    return np.asarray(prf) / 2.
 
-    fmax = PRF/2.
-
-    return fmax
-    
-#===============
 
 def Vmax(PRF, lam):
-    """Nyquist velocity, or maximum unambiguous Doppler velocity (+ or -).
-    
+    """Nyquist velocity, or maximum unambiguous Doppler velocity (+ or -) [m/s].
+
     From Rinehart (1997), Eqn 6.7
-    
-    INPUT::
-    -----
-    PRF : float
+
+    Parameters
+    ----------
+    PRF : float or array
         Radar pulse repetition frequency [Hz]
-    lam : float
+    lam : float or array
         Radar wavelength [m]
- 
-    OUTPUT::
-    ------
-    Vmax : float
-        Nyquist velocity [m/s], +/-
-    
-    USAGE::
-    -----
-    Vmax = Vmax(f,lam)
     """
+    return np.asarray(PRF) * lam / 4.
 
-    Vmax = PRF * lam / 4.
-
-    return Vmax
-    
-#===============
 
 def Rmax(PRF):
-    """Maximum unamiguous range.
-    
+    """Maximum unamiguous range [m].
+
     From Rinehart (1997), Eqn 6.11
-    
-    INPUT::
-    -----
-    PRF : float
+
+    Parameters
+    ----------
+    PRF : float or array
         Pulse repetition frequency [Hz]
- 
-    OUTPUT::
-    ------
-    Rmax : float
-        Maximum unambiguous range [m]
-    
-    USAGE::
-    -----
-    Rmax = Rmax(PRF)
     """
+    return speed_of_light / (2. * np.asarray(PRF))
 
-    Rmax = c / (2. * PRF)
 
-    return Rmax
-    
-#==============
+def doppler_dilemma(varin, lam):
+    """
+    The "Doppler dilemma" is the fact that both the Nyquist velocity and
+    unambiguous maximum range of the radar are based upon the PRF of the system.
 
-def Dop_dilemma(In, lam):
-    """The "Doppler dilemma" is the fact that both the Nyquist velocity and 
-      unambiguous maximum range of the radar are based upon the PRF of the system.
-    However, they are inversely proportional, meaning that increasing one 
-      requires a decrease in the other.  A trade-off inherent in Doppler radar
-      systems.  This relationship allows a solution for one variable given the
-      value of the other.
+    However, they are inversely proportional, meaning that increasing one
+    requires a decrease in the other.  A trade-off inherent in Doppler radar
+    systems.  This relationship allows a solution for one variable given the
+    value of the other.
 
     From Rinehart (1997), Eqn 6.12
-    
-    INPUT::
-    -----
-    In : float
+
+    Parameters
+    ----------
+    varin : float or array
         Nyquist Velocity [m/s] or Maximum unambiguous range [m]
     lam : float
         Radar wavelength [m]
- 
-    OUTPUT::
-    ------
-    Out : float
-        The In that is not used
-    
-    USAGE::
-    -----
-    Out = Dop_dilemma(In,lam)
     """
+    return (speed_of_light * lam / 8.) / np.asarray(varin)
 
-    Out = (c * lam / 8.) / In
+########################
+##  MOBILE PLATFORMS  ##
+########################
 
-    return Out
-    
-#==============
+def Vshift(ground_speed, psi):
+    """
+    Adjusted Doppler velocity [m/s] from a mobile platform.
+    Shift in Doppler velocity from mobile perspective.
 
-##################
-# MOBILE PLATFORMS
-##################
+    Jorgensen (1983), Eqn 2
 
-def Vshift(GS, psi):
-    """Adjusted Doppler velocity from a mobile platform.
-    
-    From Jorgensen (1983), Eqn 2
-    
-    INPUT::
-    -----
-    GS : float
+    Parameters
+    ----------
+    ground_speed : float or array
         Gound speed [m/s]
-    psi : float
+    psi : float or array
         Angle between actual azimuth and fore/aft angle [deg]
- 
-    OUTPUT::
-    ------
-    Vshift : float
-        Shift in Doppler velocity from mobile aspect [m/s]
-    
-    USAGE::
-    -----
-    Vshift = Vshift(GS,psi)
-    
-    NOTES::
+
+    Notes
     -----
     In the case of a mobile platform (such as the NOAA P-3 aircraft, the
       Doppler velocity must be adjusted for movement of the scanning platform.
 
-    The fore/aft angle is defined as the angle fore or aft from a plane 
-      normal to the direction of motion  
+    The fore/aft angle is defined as the angle fore or aft from a plane
+      normal to the direction of motion
     """
+    len_gs = len(np.asarray(ground_speed))
+    len_psi = len(np.asarray(psi))
+#    if  len_gs != len_psi and len_gs != 1 and len_psi != 1:
+    return np.asarray(ground_speed) * np.cos(np.deg2rad(psi))
 
-    Vshift = GS * np.cos(np.deg2rad(psi))
 
-    return Vshift
-    
-#=================
+def Vmax_dual(lam, prf1, prf2):
+    """Doppler velocity [m/s] from dual PRF scheme radar (+ or -).
 
-def Vmax_dual(lam, PRF1, PRF2):
-    """Doppler velocity from dual PRF scheme radar (+ or -).
-    
     From Jorgensen (1983), Eqn 2
-    
-    INPUT::
-    -----
+
+    Parameters
+    ----------
     lam : float
         Radar wavelength [m]
-    PRF1 : float
+    prf1 : float
         First Pulse repetition frequency [Hz]
-    PRF2 : float
+    prf2 : float
         Second Pulse repetition frequency [Hz]
- 
-    OUTPUT::
-    ------
-    Vmax : float
-        Doppler velocity [m/s]
-    
-    USAGE::
-    -----
-    Vmax = Vmax_dual(GS,psi)
- 
-    NOTES::
+
+    Notes
     -----
     In the case of a mobile platform (such as the NOAA P-3 aircraft, the
-       Doppler velocity must be adjusted for movement of the scanning platform.
+    Doppler velocity must be adjusted for movement of the scanning platform.
 
-    The fore/aft angle is defined as the angle fore or aft from a plane 
-       normal to the direction of motion  
+    The fore/aft angle is defined as the angle fore or aft from a plane
+    normal to the direction of motion
     """
 
-    Vmax = lam / (4 * ((1. / PRF1) - (1. / PRF2)))
+    Vmax = lam / (4 * ((1. / prf1) - (1. / prf2)))
 
     return Vmax
 #====================================================
