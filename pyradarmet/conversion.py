@@ -8,7 +8,7 @@ Functions for converting common radar units.
 import numpy as np
 
 
-def dBZ2Z(dBZ):
+def dbz2z(dbz):
     """
     Convert from log [dBZ] to linear Z [mm^6 m^−3] units.
 
@@ -17,55 +17,55 @@ def dBZ2Z(dBZ):
     dBZ : float or array
         logarithmic reflectivity value
     """
-    return 10.**(np.asarray(dBZ)/10.)
+    return 10.**(np.asarray(dbz)/10.)
 
 
-def Z2dBZ(Zlin):
+def z2dbz(zlin):
     """
     Convert from linear Z [mm^6 m^−3] to log [dBZ] units.
 
     Parameters
     ----------
-    Zlin : float or array
+    zlin : float or array
         linear reflectivity units
     """
-    return 10. * np.log10(np.asarray(Zlin))
+    return 10. * np.log10(np.asarray(zlin))
 
 
-def si2kmh(SI):
+def si2kmh(si):
     """
     Convert from SI [m/s] wind units to km/h.
 
     Parameters
     ----------
-    SI : float or array
+    si : float or array
         Wind in SI units (m/s)
     """
-    return np.asarray(SI) * 3600. / 1000.
+    return np.asarray(si) * 3600. / 1000.
 
 
-def si2mph(SI):
+def si2mph(si):
     """
     Convert from SI wind units to miles/h [mph].
 
     Parameters
     ----------
-    SI: float or array
+    si: float or array
         Wind in SI units (m/s)
     """
-    return np.asarray(SI) * 0.62137 / 1000. * 3600.
+    return np.asarray(si) * 0.62137 / 1000. * 3600.
 
 
-def si2kts(SI):
+def si2kts(si):
     """
     Convert from SI wind units to knots [kt].
 
     Parameters
     ----------
-    SI: float or array
+    si: float or array
         Wind in SI units (m/s)
     """
-    return np.asarray(SI) * 0.51
+    return np.asarray(si) * 0.51
 
 
 def kmh2si(kmh):

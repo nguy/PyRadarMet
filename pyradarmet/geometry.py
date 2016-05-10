@@ -185,7 +185,6 @@ def range_correct(r, h, elev):
     rnew = np.asarray(r) - np.cumsum(dr)
     return rnew
 
-#===============
 
 def beam_block_frac(Th, Bh, a):
     """Partial beam blockage fraction. Unitless.

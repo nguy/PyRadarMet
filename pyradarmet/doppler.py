@@ -180,5 +180,4 @@ def Vmax_dual(lam, prf1, prf2):
     Vmax = lam / (4 * ((1. / prf1) - (1. / prf2)))
 
     return Vmax
-#====================================================
 
