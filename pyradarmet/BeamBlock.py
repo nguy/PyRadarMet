@@ -345,7 +345,7 @@ class BeamBlock(object):
 
         # Calculate the height of center of beam
         self.h = ray_height(self.rng, self.E, 
-                                          self.ralt, R1=self.Reff)
+                                          self.ralt, reff=self.Reff)
 
         # Calculate the beam radius
         self.a = half_power_radius(self.rng, self.BW)
