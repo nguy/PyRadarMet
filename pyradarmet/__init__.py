@@ -1,5 +1,5 @@
 """
-PyRadarMet - Python Package that contains a variety of functions for radar meteorology
+PyRadarMet - Python Package containing functions for radar meteorology
 ==================================
 Top-level package (:mod:`pyradarmet`)
 ==================================

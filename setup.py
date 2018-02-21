@@ -65,58 +65,58 @@ gtopourl="ftp://edcftp.cr.usgs.gov/data/gtopo30/global/"
 
 try:
   basefolder = os.environ["GTOPO_DATA"]
-  print "Topo data will be installed to %s" % os.environ["GTOPO_DATA"]
+  print("Topo data will be installed to %s" % os.environ["GTOPO_DATA"])
 except KeyError:
   basefolder = "./pyradarmet/"
-  print "GTOPO_DATA environmental variable not set, "\
-  "using default path in package directory"
+  print("GTOPO_DATA environmental variable not set, "
+        "using default path in package directory")
 
 archfolder=os.path.join(basefolder, 'gz')
 datafolder=os.path.join(basefolder, 'data')
 
-names =["antarcps", "e060n40", "e100n40", "e140n40", "w020n40", "w060n90",
-        "w100n90", "w140n90", "w180s10", "e020n40", "e060n90", "e100n90",
-        "e140n90", "w020n90", "w060s10", "w100s10", "w140s10", "w180s60",
-        "e020n90", "e060s10", "e100s10", "e140s10", "w020s10", "w060s60",
-        "w120s60", "w180n40", "e020s10", "e060s60", "e120s60", "w000s60",
-        "w060n40", "w100n40", "w140n40", "w180n90"]
+names = ["antarcps", "e060n40", "e100n40", "e140n40", "w020n40", "w060n90",
+         "w100n90", "w140n90", "w180s10", "e020n40", "e060n90", "e100n90",
+         "e140n90", "w020n90", "w060s10", "w100s10", "w140s10", "w180s60",
+         "e020n90", "e060s10", "e100s10", "e140s10", "w020s10", "w060s60",
+         "w120s60", "w180n40", "e020s10", "e060s60", "e120s60", "w000s60",
+         "w060n40", "w100n40", "w140n40", "w180n90"]
 
 for folder in [archfolder, datafolder]:
-  print folder
-  if not os.path.exists(folder):
-    os.makedirs(folder)
+    print(folder)
+    if not os.path.exists(folder):
+      os.makedirs(folder)
 
 start_time = time.time()
 
 for filename in names:
-  archfilebase = filename+".tar.gz"
-  archfile = os.path.join(archfolder, archfilebase)
-  hdrfilebase = filename+".hdr"
-  demfilebase = filename+".dem"
+    archfilebase = filename+".tar.gz"
+    archfile = os.path.join(archfolder, archfilebase)
+    hdrfilebase = filename+".hdr"
+    demfilebase = filename+".dem"
 
-  if not os.path.exists(archfile):
-    print("downloading: {0}".format(archfilebase))
-    ftpfile = urllib2.urlopen(gtopourl+archfilebase)
-    localfile = open(archfile, "wb")
-    shutil.copyfileobj(ftpfile, localfile)
-    localfile.close()
+    if not os.path.exists(archfile):
+        print("downloading: {0}".format(archfilebase))
+        ftpfile = urllib2.urlopen(gtopourl+archfilebase)
+        localfile = open(archfile, "wb")
+        shutil.copyfileobj(ftpfile, localfile)
+        localfile.close()
 
-  for exfilebase in [hdrfilebase, demfilebase]:
-    exfile = os.path.join(datafolder,exfilebase)
-    if not os.path.exists(exfile):
-      print("extracting: {0} from {1}".format(exfilebase, archfilebase))
-      tar = tarfile.open(archfile)
-      tarobj = tar.extractfile(exfilebase.upper())
-      localfile = open(exfile, "wb")
-      shutil.copyfileobj(tarobj, localfile)
-      tarobj.close()
-      localfile.close()
-      tar.close()
+    for exfilebase in [hdrfilebase, demfilebase]:
+        exfile = os.path.join(datafolder,exfilebase)
+        if not os.path.exists(exfile):
+          print("extracting: {0} from {1}".format(exfilebase, archfilebase))
+          tar = tarfile.open(archfile)
+          tarobj = tar.extractfile(exfilebase.upper())
+          localfile = open(exfile, "wb")
+          shutil.copyfileobj(tarobj, localfile)
+          tarobj.close()
+          localfile.close()
+          tar.close()
 
 download_time = time.time() - start_time
-print "Total download time: %g seconds"%(download_time)
-#print "Removing tar directory: %s" % archfolder
-#shutil.rmtree(archfolder)
+print("Total download time: %g seconds"%(download_time))
+# print "Removing tar directory: %s" % archfolder
+# shutil.rmtree(archfolder)
 #########
 #- Run setup
 if datafolder == './pyradarmet/data/':
@@ -154,7 +154,7 @@ if datafolder == './pyradarmet/data/':
 		  install_requires = ['Numpy >=1.7.2'],
 		  )
 else:
-    print "In EXTERNAL"
+    print("In EXTERNAL")
 
     setup(
 		  name=PACKNAME,
@@ -190,4 +190,4 @@ else:
 
 
 install_time = time.time() - start_time
-print "Total install time: %g seconds"%(install_time)
+print("Total install time: %g seconds" % (install_time))

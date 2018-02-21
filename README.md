@@ -1,11 +1,11 @@
 PyRadarMet
-===============
+==========
 Python Fundamental Calculations in Radar Meteorology package notes
 
 Originally Created:   5 February 2014
 
 ## Author
-Nick Guy - nick.guy@uwyo.edu
+Nick Guy - nguysur@gmail.com
 
 Special thanks to Timothy Lang and Kai Muehlbauer for the insights and contributions.
 

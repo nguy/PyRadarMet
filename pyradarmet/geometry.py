@@ -15,10 +15,12 @@ Beam Blockage Correction to Variability in the Vertical Refractivity Gradient.
 import numpy as np
 
 
-earth_radius = 6371000 # Earth's average radius [m] assuming sphericity
-r43 = earth_radius * 4./3. # 4/3 Approximation effective radius for standard atmosphere [m]
-
 # Earth radius taken according to International Union of Geodesy and Geophysics
+# Earth's average radius [m] assuming sphericity
+earth_radius = 6371000
+# 4/3 Approximation effective radius for standard atmosphere [m]
+r43 = earth_radius * 4./3.
+
 
 def r_effective(dndh=-39e-6):
     """
@@ -87,7 +89,7 @@ def ray_height(r, elev, h0, reff=r43):
     """
     # Convert earth's radius to km for common dN/dH values and then
     # multiply by 1000 to return radius in meters
-    term1 = (np.sqrt(np.asarray(r)**2 +reff**2 +
+    term1 = (np.sqrt(np.asarray(r)**2 + reff**2 +
              2 * np.asarray(r) * reff * np.sin(np.deg2rad(elev))))
     h = term1 - reff + h0
     return h
@@ -216,7 +218,7 @@ def beam_block_frac(Th, Bh, a):
     # radar beam (Bech et al. (2003), Fig.3)
     y = Th - Bh
 
-    Numer = (y * np.sqrt(a**2 - y**2)) + (a**2 * np.arcsin(y/a)) + (np.pi * a**2 /2.)
+    Numer = (y * np.sqrt(a**2 - y**2)) + (a**2 * np.arcsin(y/a)) + (np.pi * a**2 / 2.)
 
     Denom = np.pi * a**2
 
