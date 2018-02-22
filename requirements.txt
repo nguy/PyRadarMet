@@ -1,0 +1,11 @@
+numpy
+matplotlib.cm
+glob
+os
+subprocess
+netCDF4
+time
+pkg_resources
+scipy
+mpl_toolkits.basemap
+pyart

@@ -48,11 +48,12 @@ def reflectivity(power_t, gain, pulse_width, wavelength, bw_h, bw_v,
     -----
     This routine calls the radar_constant function.
     The default is for a dielectric factor value for water.  This can be
-        changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
-        diameters or K=0.176 for particle sizes of equivalent ice spheres.
+    changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
+    diameters or K=0.176 for particle sizes of equivalent ice spheres.
     """
     # Call the radar constant function
-    C1 = radar_constant(power_t, gain, pulse_width, wavelength, bw_h, bw_v, aloss, rloss)
+    C1 = radar_constant(power_t, gain, pulse_width, wavelength,
+                        bw_h, bw_v, aloss, rloss)
     return power_return * np.asarray(r)**2 / (C1 * dielectric**2)
 
 
@@ -191,7 +192,7 @@ def zdp(z_h, z_v):
 
     zdp = np.full_like(zh, np.nan)
     good = np.where(zh > zv)
-    zdp[good] = 10.* np.log10(zh[good] - zv[good])
+    zdp[good] = 10. * np.log10(zh[good] - zv[good])
     return zdp
 
 
@@ -217,7 +218,8 @@ def hdr(dbz_h, zdr):
 
     Considerations for this equation (see paper for more details):
        1) Standar error of disdrometer data allowed for
-       2) Drop oscillation accounted for based on 50% model of Seliga et al (1984)
+       2) Drop oscillation accounted for based on 50% model
+          of Seliga et al (1984)
        3) Lower (27) bound chose to provide constant Zh ref level
        4) Upper cutoff of 60 (may be too low)
 

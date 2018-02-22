@@ -14,7 +14,8 @@ Meteorological Radar.
 import numpy as np
 
 
-speed_of_light = 3e8 # Speed of light [m/s]
+speed_of_light = 3e8  # Speed of light [m/s]
+
 
 def freq(lam):
     """Frequency [Hz] given wavelength.
@@ -104,7 +105,8 @@ def Rmax(PRF):
 def doppler_dilemma(varin, lam):
     """
     The "Doppler dilemma" is the fact that both the Nyquist velocity and
-    unambiguous maximum range of the radar are based upon the PRF of the system.
+    unambiguous maximum range of the radar are based upon
+    the PRF of the system.
 
     However, they are inversely proportional, meaning that increasing one
     requires a decrease in the other.  A trade-off inherent in Doppler radar
@@ -122,9 +124,10 @@ def doppler_dilemma(varin, lam):
     """
     return (speed_of_light * lam / 8.) / np.asarray(varin)
 
-########################
-##  MOBILE PLATFORMS  ##
-########################
+######################
+#  MOBILE PLATFORMS  #
+######################
+
 
 def Vshift(ground_speed, psi):
     """
@@ -180,4 +183,3 @@ def Vmax_dual(lam, prf1, prf2):
     Vmax = lam / (4 * ((1. / prf1) - (1. / prf2)))
 
     return Vmax
-

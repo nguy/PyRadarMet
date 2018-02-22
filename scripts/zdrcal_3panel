@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 
-#======================================================================
-# Import needed libraries
 import pyart
 import argparse
 import numpy as np
@@ -10,8 +8,9 @@ import matplotlib.pylab as plt
 from glob import glob
 
 from pyradarmet.zdrcal import calculate_zdr_offset as zdrcal
-from pyradarmet.zdrcal import plot_zdr_rhv,plot_add_stats,oplot_zdr_rhv,plot_3panel,oplot_3panel
-#======================================================================
+from pyradarmet.zdrcal import (plot_zdr_rhv, plot_add_stats, 
+                               oplot_zdr_rhv, plot_3panel, oplot_3panel)
+
 # The user can modify these next variables to control how the program processes data
 MINSIG = 0.5 # Maximum standard deviation to accept in analysis
 MINSAMPLE = 100 # Minimum number of samples used to perform calculations
@@ -23,8 +22,8 @@ ZH_LIMS = [-20., 30.] # Range of Reflectivity to plot
 RH_LIMS = [0.8, 1.0] # Range of Copolar Correlation Coefficient to plot
 DR_LIMS = [-1.5, 1.5] # Range of Differential reflectivity to plot
 KD_LIMS = [0.2, 0.4] # Range of Specific Differential Phase to plot
-PD_LIMS = [-.4,.4]
-STD_LIMS = [.1,.7]
+PD_LIMS = [-.4, .4]
+STD_LIMS = [.1, .7]
 
 pOut = "zdr_bias_3panel"
 pType = "png"
@@ -60,27 +59,27 @@ if __name__ == '__main__':
 
     parser.add_argument('-v', '--version', action='version',
                         version='Py-ART version %s' % (pyart.__version__))
-                        
+
     parser.add_argument('-p', '--plot', action='store_true',
                         help='create an output plot file')
 #    parser.add_argument('-t', '--text', action='store_true',
 #                        help='create and output text file')
-                        
+
     args = parser.parse_args()
     # ======================================================================
-    
+
     # Search for the file(s)
 #    if args.dir:
 #       os.chdir(args.dir)
     flist = glob(args.searchstring)
-    
+
     multiStat = False
     if len(flist) > 1:
         multiStat = True
     # Create an array to hold data, only really used if multiple files
-    Stats = np.ma.empty([len(flist),3])
+    Stats = np.ma.empty([len(flist), 3])
 
-    index = 0  
+    index = 0
     indexGood = 0
     for file in flist:
         fName, fileExt = os.path.splitext(file)
@@ -101,25 +100,25 @@ if __name__ == '__main__':
             radar = pyart.io.read(file)
 
         # Call the bias calculation routine
-        zdr_bias = zdrcal(radar, remove_first_n_gates=GATESKIP, sample_min=MINSAMPLE,\
+        zdr_bias = zdrcal(radar, remove_first_n_gates=GATESKIP, sample_min=MINSAMPLE,
                           rhv_min=MINRHV, sig_min=MINSIG, dbz_min=MINDBZ, Htmax=MAXHT)
-        
+
         # If minimun number of samples is met
         if zdr_bias is not None:
-            txVar = ("Avg Zdr: "+str(zdr_bias['volume_average'])+\
-                     "  Std Dev: "+str(zdr_bias['volume_standard_deviation'])+\
-                     "  Good Pts: "+str(zdr_bias['volume_number_good'])+\
-                     " File: "+os.path.basename(fName))
-        
+            txVar = ("Avg Zdr: " + str(zdr_bias['volume_average']) +
+                     "  Std Dev: " + str(zdr_bias['volume_standard_deviation']) +
+                     "  Good Pts: " + str(zdr_bias['volume_number_good']) +
+                     " File: " + os.path.basename(fName))
+
             if zdr_bias['volume_standard_deviation'] > MINSIG:
-                Stats[index,0] = np.ma.masked
-                Stats[index,1] = np.ma.masked
-                Stats[index,2] = np.ma.masked
+                Stats[index, 0] = np.ma.masked
+                Stats[index, 1] = np.ma.masked
+                Stats[index, 2] = np.ma.masked
             else:
-                Stats[index,0] = zdr_bias['volume_average']
-                Stats[index,1] = zdr_bias['volume_standard_deviation']
-                Stats[index,2] = zdr_bias['volume_number_good']
-        
+                Stats[index, 0] = zdr_bias['volume_average']
+                Stats[index, 1] = zdr_bias['volume_standard_deviation']
+                Stats[index, 2] = zdr_bias['volume_number_good']
+
             # Create plot if desired
             if args.plot:
                 if index == 0:
@@ -127,43 +126,48 @@ if __name__ == '__main__':
 ####                    zdr_bias['height_average'],zdr_bias['kdp_height_average'],
 ##                    zdr_bias['height_average'],zdr_bias['height_standard_deviation'],
  ##                   zdr_bias['range']['data']/1000.,ymax=MAXHT,
-                    fig, ax1, ax2, ax3 = plot_3panel(zdr_bias['dbz_height_average_filt'],
+                    fig, ax1, ax2, ax3 = plot_3panel(
+                        zdr_bias['dbz_height_average_filt'],
 ##                    zdr_bias['height_average_filt'],zdr_bias['phidp_height_average_filt'],
-                        zdr_bias['height_average_filt'],zdr_bias['height_standard_deviation_filt'],
-                        zdr_bias['range']['data']/1000.,ymax=MAXHT,
-                        xlims1=ZH_LIMS,xlims2=DR_LIMS,xlims3=std_lims,
-                        label=True,labelTx=zdr_bias['radar_name'],X3lab='Std Dev')
+                        zdr_bias['height_average_filt'],
+                        zdr_bias['height_standard_deviation_filt'],
+                        zdr_bias['range']['data']/1000., ymax=MAXHT,
+                        xlims1=ZH_LIMS, xlims2=DR_LIMS, xlims3=std_lims,
+                        label=True, labelTx=zdr_bias['radar_name'], X3lab='Std Dev')
                 else:
                     if zdr_bias['height_standard_deviation'].mean() > MINSIG:
                         alff = 0.1
                     else:
                         alff = 1.
-                    oplot_3panel(zdr_bias['dbz_height_average'],zdr_bias['height_average'],
-                        zdr_bias['height_standard_deviation'],zdr_bias['range']['data']/1000.,
-                        ax1=ax1,ax2=ax2,ax3=ax3,alf=alff)
+                    oplot_3panel(zdr_bias['dbz_height_average'],
+                                 zdr_bias['height_average'],
+                                 zdr_bias['height_standard_deviation'],
+                                 zdr_bias['range']['data']/1000.,
+                                 ax1=ax1, ax2=ax2, ax3=ax3, alf=alff)
             # Increment indices
             index += 1
             if zdr_bias['height_standard_deviation'].mean() > MINSIG:
                 indexGood += 1
-            
+
             RadName = zdr_bias['radar_name']
-        
+
             del zdr_bias
         # If zdr_bias returns None, then too few samples were uncovered.
         else:
             txVar = ("Not enough samples in volume")
-        print txVar
+        print(txVar)
 
     if multiStat:
-        plot_add_stats(instance='multi',avg=Stats[:,0].mean(),
-                        sd=Stats[:,1].mean(),points=Stats[:,2].sum(),
-                        good_samples=indexGood,tot_samples=index,labelpos=(.4,.83))
+        plot_add_stats(instance='multi', avg=Stats[:, 0].mean(),
+                       sd=Stats[:, 1].mean(), points=Stats[:, 2].sum(),
+                       good_samples=indexGood, tot_samples=index, labelpos=(.4, .83))
     else:
-        plot_add_stats(instance='single',avg=Stats[0,0],sd=Stats[0,1],points=Stats[0,2],
-                    labelpos=(.4,.83))
-        
+        plot_add_stats(instance='single', avg=Stats[0, 0],
+                       sd=Stats[0, 1], points=Stats[0, 2],
+                       labelpos=(.4, .83))
+
 #    plt.show()
 # Create final output file name
-    fOut = RadName+'_'+pOut+'.'+pType
-    print "Creating "+ fOut
-    plt.savefig(fOut,format=pType)
+    fOut = RadName + '_' + pOut + '.' + pType
+    print("Creating " + fOut)
+    plt.savefig(fOut, format=pType)

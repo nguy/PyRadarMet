@@ -12,8 +12,9 @@ Rinehart (1997), Radar for Meteorologists.
 import numpy as np
 
 
-speed_of_light = 3e8 # Speed of light [m/s]
-kBoltz = 1.381e-23 # Boltzmann's constant [ m^2 kg s^-2 K^-1]
+speed_of_light = 3e8  # Speed of light [m/s]
+kBoltz = 1.381e-23  # Boltzmann's constant [ m^2 kg s^-2 K^-1]
+
 
 def gain_Pratio(p1, p2):
     """
@@ -174,7 +175,8 @@ def power_target(power_t, gain, areat, r):
 
 def xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     """
-    Backscatter cross-sectional area [m^-2] of a sphere using the Rayleigh approximation.
+    Backscatter cross-sectional area [m^-2] of a sphere using
+    the Rayleigh approximation.
 
     From Rinehart (1997), Eqn 4.9 and 5.7
 
@@ -190,9 +192,9 @@ def xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     Notes
     -----
     The Rayleigh approximation is good when the diamter of a spherical particle
-    is much smaller than the wavelength of the radar (D/wavelength= 1/16).  This
-    condition leads to the relationship that the area is proportional to the
-    sixth power of the diameter.
+    is much smaller than the wavelength of the radar (D/wavelength= 1/16).
+    This condition leads to the relationship that the area is proportional
+    to the sixth power of the diameter.
 
     The default is for a dielectric factor value for water.  This can be
     changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
@@ -203,7 +205,8 @@ def xsec_bscatter_sphere(diam, lam, dielectric=0.93):
 
 def norm_xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     """
-    Normalized Backscatter cross-sectional area [m^2] of a sphere using the Rayleigh approximation.
+    Normalized Backscatter cross-sectional area [m^2] of a sphere using
+    the Rayleigh approximation.
 
     From Rinehart (1997), Eqn 4.9 and 5.7 and Battan Ch. 4.5
 
@@ -219,9 +222,9 @@ def norm_xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     Notes
     -----
     The Rayleigh approximation is good when the diamter of a spherical particle
-    is much smaller than the wavelength of the radar (D/wavelength= 1/16).  This
-    condition leads to the relationship that the area is proportional to the
-    sixth power of the diameter.
+    is much smaller than the wavelength of the radar (D/wavelength= 1/16).
+    This condition leads to the relationship that the area is proportional
+    to the sixth power of the diameter.
 
     The default is for a dielectric factor value for water.  This can be
     changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
@@ -230,7 +233,7 @@ def norm_xsec_bscatter_sphere(diam, lam, dielectric=0.93):
 
     # Calculate the cross-sectional backscatter area
     sig = xsec_bscatter_sphere(np.asarray(diam), lam, dielectric)
-    return sig/ (np.pi * (np.asarray(diam)/2.)**2)
+    return sig / (np.pi * (np.asarray(diam)/2.)**2)
 
 
 def size_param(diam, lam):
@@ -248,8 +251,9 @@ def size_param(diam, lam):
 
     Notes
     -----
-    The size paramter can be used along with the backscattering cross-section to
-    distinguish ice and water dielectric characteristics.  For example:
+    The size paramter can be used along with the backscattering
+    cross-section todistinguish ice and water dielectric characteristics.
+    For example:
     Alpha < 2 the backscattering cross-section of ice is smaller than water,
     Alpha > 2 the opposite is true due to the fact that absorption in water
     exceeds that in ice.
@@ -259,7 +263,8 @@ def size_param(diam, lam):
 
 def power_return_target(power_t, gain, lam, sig, r):
     """
-    Power [W] returned y target located at the center of the antenna beam pattern.
+    Power [W] returned y target located at the center
+    of the antenna beam pattern.
 
     From Rinehart (1997), Eqn 4.7
 
@@ -304,9 +309,9 @@ def thermal_noise(bandwidth, Units, noise_temp=290.):
     # Calculate the noise, convert if requested
     noise = kBoltz * noise_temp * np.asarray(bandwidth)
 
-    if Units.upper()=='W':
+    if Units.upper() == 'W':
         noiset = noise
-    elif Units.upper()=='DBM':
+    elif Units.upper() == 'DBM':
         noiset = 10. * np.log10(noise/10**-3)
     else:
         print("Units must be in 'W' or 'dBm'")
