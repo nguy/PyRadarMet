@@ -29,7 +29,6 @@ matrix:
 before_install:
 - pip install pytest pytest-cov
 - pip install coveralls
-install: source continuous_integration/install.sh
 script: eval xvfb-run nosetests $NOSE_ARGS
 after_success:
     # Ignore coveralls failures as the coveralls server is not very reliable
